@@ -1,2 +1,12 @@
 fastapi==0.115.5
 uvicorn[standard]==0.32.1
+openai
+pandas
+tiktoken
+psycopg2-binary
+pgvector
+langchain-openai
+python-dotenv
+numpy
+pydantic
+python-multipart
