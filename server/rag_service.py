@@ -44,26 +44,6 @@ def get_embeddings_vector(text):
   response = embedding_model.embed_query(text)
   return response
 
-
-def process_input_with_retrieval(user_input):
-    delimiter = "```"
-
-    related_docs = get_top3_similar_docs(get_embeddings_vector(user_input), conn)
-
-    system_message = f"""
-    You are a friendly chatbot. \
-    You can answer questions about mental health services. \
-    You respond in a concise, technically credible tone. \
-    """
-    messages = [
-        {"role": "system", "content": system_message},
-        {"role": "user", "content": f"{delimiter}{user_input}{delimiter}"},
-        {"role": "assistant", "content": f"Relevant mental health services information: \n {related_docs[0]} \n {related_docs[1]} {related_docs[2]}"}   
-    ]
-
-    final_response = get_completion_from_messages(messages)
-    return final_response
-
 def process_input_with_retrieval_continuous(user_input, conversation_history=[]):
     delimiter = "```"
 
@@ -92,12 +72,3 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
 
     final_response = get_completion_from_messages(messages)
     return final_response
-
-
-if __name__ == "__main__": 
-  input = """
-    Find the information about Australian Psychology Society, display information 
-    about this society including expected wait time, op_hours_extended_details, address, 
-    surburb and target population, workforce type. 
-    """ 
-  print(process_input_with_retrieval(input))
