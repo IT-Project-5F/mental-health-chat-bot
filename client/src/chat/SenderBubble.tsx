@@ -1,4 +1,4 @@
-// Properties of Sender Bubble
+/* Types and Interfaces */
 interface SendBubbleProps {
     text: string;
 }
@@ -16,7 +16,7 @@ const SendBubble: React.FC<SendBubbleProps> = ({ text }) => {
             self-end
             "
         >
-            <p>{text}</p>
+            <p className="whitespace-pre-wrap">{text}</p>
         </div>
     );
 };

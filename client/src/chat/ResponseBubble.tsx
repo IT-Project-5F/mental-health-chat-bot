@@ -1,4 +1,4 @@
-// Properties of Response Bubble
+/* Types and Interfaces */
 interface ResponseBubbleProps {
     text: string;
 }
@@ -15,7 +15,7 @@ const ResponseBubble: React.FC<ResponseBubbleProps> = ({ text }) => {
             self-start
             "    
         >
-            <p>{text}</p>
+            <p className="whitespace-pre-wrap">{text}</p>
         </div>
     );
 };
