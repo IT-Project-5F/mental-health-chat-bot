@@ -8,7 +8,7 @@ from .Model import TokenData
 from users.Model import User
 from .Database import sessionLocal, engine, Base 
 from .Utils import get_password_hash, verify_passowrd, create_access_token, ALGORITHM, SECRET_KEY
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/api/auth/login")
 
 def get_database(): 
   database = sessionLocal() 

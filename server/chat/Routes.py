@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 chat_sessions: Dict[str, dict] = {}
 
-@router.post("/api/sessions", response_model=SessionResponse)
+@router.post("/sessions", response_model=SessionResponse)
 async def create_session():
     """
     Create a new chat session
@@ -32,7 +32,7 @@ async def create_session():
     logger.info(f"Created new session: {session_id}")
     return SessionResponse(session_id=session_id, created_at=timestamp)
 
-@router.get("/api/sessions/{session_id}/history", response_model=ChatHistory)
+@router.get("/sessions/{session_id}/history", response_model=ChatHistory)
 async def get_chat_history(session_id: str):
     """
     Get chat history for a session
@@ -45,7 +45,7 @@ async def get_chat_history(session_id: str):
         messages=chat_sessions[session_id]["messages"]
     )
 
-@router.post("/api/chat", response_model=ChatResponse)
+@router.post("/", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     """
     Process user chat message using RAG system with conversation history
@@ -103,14 +103,14 @@ async def chat_endpoint(request: ChatRequest):
         logger.error(f"Error processing chat request: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/api/test")
+@router.get("/test")
 def test_endpoint():
     """
     Test endpoint to verify API is working
     """
     return {"message": "API is working correctly"}
 
-@router.get("/api/sessions/stats")
+@router.get("/sessions/stats")
 async def get_session_stats():
     """
     Get statistics about current sessions

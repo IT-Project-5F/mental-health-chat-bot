@@ -15,9 +15,9 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Mental Health Chat Bot API", version="1.0.0")
 
-app.include_router(auth_router, prefix  = '/auth', tags  = ["auth"]) 
-app.include_router(users_router, prefix = '/users', tags = ["users"])
-app.include_router(chat_router,  prefix = '/chat', tags  = ["chat"])
+app.include_router(auth_router, prefix  = '/api/auth', tags  = ["auth"]) 
+app.include_router(users_router, prefix = '/api/users', tags = ["users"])
+app.include_router(chat_router,  prefix = '/api/chat', tags  = ["chat"])
 
 # Configure CORS
 app.add_middleware(
@@ -31,7 +31,7 @@ app.add_middleware(
 @app.middleware("http")
 async def authentication_middleware(request: Request, call_next):
     path_permissions = { 
-        "/chat/": ["chat"]
+        "/api/chat/": ["chat"]
     }
     required_roles = None
     for path, roles in path_permissions.items():
