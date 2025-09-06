@@ -3,14 +3,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Map from "./Map.tsx";
 import Listing from "./Listing.tsx";
 //import Login from "./Login.tsx";
+import ChatContainer from "./chat/ChatContainer.tsx";
 
 function App() {
 
   return (
     <Router>
       <Routes>
-        {/*<Route path="/login" element={<Login/>}/>
-        */}
+        {/*<Route path="/login" element={<Login/>}/>*/}
         <Route
           path="/"
           element={
@@ -20,6 +20,9 @@ function App() {
               </div>
               <div className="absolute inset-0">
                 <Listing/>
+              </div>
+              <div className="absolute inset-0">
+                <ChatContainer/>
               </div>
             </div>
           }
