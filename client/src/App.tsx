@@ -2,14 +2,15 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Map from "./Map.tsx";
 import Listing from "./Listing.tsx";
-import Login from "./Login.tsx";
+//import Login from "./Login.tsx";
 
 function App() {
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login/>}/>
+        {/*<Route path="/login" element={<Login/>}/>
+        */}
         <Route
           path="/"
           element={

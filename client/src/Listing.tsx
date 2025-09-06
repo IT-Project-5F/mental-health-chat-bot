@@ -32,8 +32,8 @@ function Listing() {
         }
     ]
     return (
-        <div className="relative inline-block inset-0 sm:top-10 w-screen sm:w-auto">
-            <div className="relative z-10 flex min-h-16 sm:min-h-20 px-4 sm:p-6 space-x-4 rounded-none sm:rounded-2xl bg-[#014532] items-center">
+        <div className="absolute inline-block top-0 left-0 sm:top-10 sm:left-10 w-screen sm:w-auto">
+            <div className="relative flex min-h-16 sm:min-h-20 px-4 sm:p-6 space-x-4 rounded-none sm:rounded-2xl bg-[#014532] items-center">
                 <span className="relative w-6 sm:w-8 h-6 sm:h-8 group" onClick={() => close(!open)}>
                     <svg className={`${open ? 'hidden' : 'block'} absolute w-6 sm:w-8 h-6 sm:h-8`} viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M20 12.5L15 17.5L10 12.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
