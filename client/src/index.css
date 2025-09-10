@@ -1,7 +1,7 @@
+@import url("https://use.typekit.net/pyj3djg.css");
 @import "tailwindcss";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -25,10 +25,23 @@ a:hover {
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: "MyFont", "sans-serif";
+}
 
+h1 {
+  font-family: "museo", "serif";
+}
+
+@font-face {
+  font-family: "MyFont";
+  src: url("./assets/VIC-fonts/VIC-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "MyFont";
+  src: url("./assets/VIC-fonts/VIC-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
 }

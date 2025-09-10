@@ -32,7 +32,7 @@ function Listing() {
         }
     ]
     return (
-        <div className="absolute inline-block top-0 left-0 sm:top-10 sm:left-10 w-screen sm:w-auto">
+        <div className="absolute w-screen sm:w-auto">
             <div className="relative flex min-h-16 sm:min-h-20 px-4 sm:p-6 space-x-4 rounded-none sm:rounded-2xl bg-[#014532] items-center">
                 <span className="relative w-6 sm:w-8 h-6 sm:h-8 group" onClick={() => close(!open)}>
                     <svg className={`${open ? 'hidden' : 'block'} absolute w-6 sm:w-8 h-6 sm:h-8`} viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -45,7 +45,7 @@ function Listing() {
                         <path d="M16 0.5C24.5604 0.5 31.5 7.43959 31.5 16C31.5 24.5604 24.5604 31.5 16 31.5C7.43959 31.5 0.5 24.5604 0.5 16C0.5 7.43959 7.43959 0.5 16 0.5Z" stroke="white" stroke-width="1"/>
                     </svg>
                 </span>
-                <h1 className="text-lg sm:text-2xl font-bold text-white">Counsellor near Melbourne</h1>
+                <h1 className="text-lg sm:text-2xl font-bold text-white">Counsellor near Parkville</h1>
             </div>
             {open && (
                 <div className="overflow-y-auto z-0 h-screen sm:max-h-134 pt-24 p-6 -mt-20 space-y-6 bg-[#DCEAAB] rounded-none sm:rounded-2xl">

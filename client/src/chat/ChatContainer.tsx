@@ -84,7 +84,7 @@ const ChatContainer: React.FC = () => {
 
   /* Rendering */
   return (
-    <div className="relative flex flex-col h-screen w-0.3 bg-[#014532]">
+    <div className="relative flex flex-col h-full sm:h-screen w-screen sm:w-full bg-[#014532]">
       {/* Tab to collaspe chat container */}
       <button
         className="absolute -left-9.5 top-1/2 -translate-y-1/2 bg-[#014532] p-1 py-4 rounded-l-lg hover:bg-[#026b4c] z-10"
