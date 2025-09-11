@@ -35,5 +35,6 @@ CREATE TABLE IF NOT EXISTS MentalHealthEmbeddings (
   embedding vector(1536)
 );
 
+
 -- Create index for vector similarity search
 CREATE INDEX IF NOT EXISTS embedding_idx ON MentalHealthEmbeddings USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
