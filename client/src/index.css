@@ -15,15 +15,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 300;
-  text-decoration: underline;
-}
-a:hover {
-  font-weight: 600;
-  padding: 10;
-}
-
 body {
   font-family: "MyFont", "sans-serif";
 }
@@ -36,6 +27,13 @@ h1 {
   font-family: "MyFont";
   src: url("./assets/VIC-fonts/VIC-Regular.otf") format("opentype");
   font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "MyFont";
+  src: url("./assets/VIC-fonts/VIC-SemiBold.otf") format("opentype");
+  font-weight: 600;
   font-style: normal;
 }
 
