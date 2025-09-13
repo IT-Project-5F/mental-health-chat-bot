@@ -12,9 +12,9 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      
+
       - ./server/init-db/01-enable-pgvector.sql:/docker-entrypoint-initdb.d/01-enable-pgvector.sql
-      - ./server/init-db/02-create-tables.sql:/docker-entrypoint-initdb.d/02-create-tables.sql
+      - ./server/init-db/03-create-normalized-tables.sql:/docker-entrypoint-initdb.d/03-create-normalized-tables.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-mental_health_db}"]
       interval: 10s

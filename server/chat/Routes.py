@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException 
+from fastapi import APIRouter, HTTPException
 from .rag_service import process_input_with_retrieval_continuous
 from .Model import *
 import logging
