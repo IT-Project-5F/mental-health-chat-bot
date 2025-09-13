@@ -6,12 +6,12 @@ interface SendBubbleProps {
 const SendBubble: React.FC<SendBubbleProps> = ({ text }) => {
     return (
         <div className="
-            max-w-xs
+            max-w-[85%]
             p-3
             rounded-2xl
             bg-[#62BB46] text-white
             shadow-lg
-            ml-12
+            ml-auto
             break-words text-left
             self-end
             "
