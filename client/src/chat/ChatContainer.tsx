@@ -3,6 +3,7 @@ import ChatInput from './ChatInput';
 import SendBubble from './SenderBubble';
 import ResponseBubble from './ResponseBubble';
 import TypingAnimation from './TypingAnimation';
+import { request } from '../api.ts';
 
 /* Types and Interfaces */
 interface Message {
@@ -27,6 +28,7 @@ const ChatContainer: React.FC = () => {
     { id: 3, text: 'I want to find clinics specialising in treatment for anxiety.', sender: 'user' },
     { id: 4, text: 'View the map.', sender: 'chatbot' },
   ])
+  const [sessionID, setSessionID] = useState<string | null>(null);
 
   /* State */
   const [isOpen, setIsOpen] = useState(true);
@@ -106,8 +108,10 @@ const ChatContainer: React.FC = () => {
   }, [isDragging, isMobile]);
 
 
-  /* Send Message Function */
-  const handleSend = (text: string) => {
+  /* Send Message Function 
+   * Once a user sends a message, the helper function is called to handle the request to the backend
+   */
+  const handleSend = async (text: string) => {
     const newMessage: Message = {
       id: messages.length + 1,
       text,
@@ -117,15 +121,45 @@ const ChatContainer: React.FC = () => {
 
     // Display typing animation
     setTyping(true);
+    const start = Date.now();
 
-    // After delay, typing animation is hidden and response message is displayed
-    setTimeout(() => {
-      setTyping(false);
+    // API creates a new chat session automatically
+    try {
+      const body: any = { message: text };
+      if (sessionID) {
+        body.session_id = sessionID;
+      }
+
+      const response = await request('POST', '/api/chat', body);
+
+      // Minimum typing animation is 1000ms
+      const elapsed = Date.now() - start;
+      const minDelay = 700;
+      const waitTime = elapsed < minDelay ? minDelay - elapsed : 0;
+
+      setTimeout(() => {
+        if (response?.response) {
+          setSessionID(response.session_id);
+          setMessages((prev: Message[]) => [
+            ...prev,
+            { id: prev.length + 1, text: response.response, sender: 'chatbot' },
+          ]);
+        } 
+        else {
+          setMessages((prev: Message[]) => [
+            ...prev,
+            { id: prev.length + 1, text: "Sorry, something went wrong. Please try again.", sender: 'chatbot' },
+          ]);
+        }
+        setTyping(false);
+      }, waitTime);
+    } catch (e) {
       setMessages((prev: Message[]) => [
         ...prev,
-        { id: prev.length + 1, text: "I found the following results.", sender: 'chatbot' },
+        { id: prev.length + 1, text: "Sorry, something went wrong. Please try again.", sender: "chatbot" },
       ]);
-    }, 2000);
+      setTyping(false);
+    };
   };
 
 
