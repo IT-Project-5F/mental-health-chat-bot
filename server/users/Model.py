@@ -8,7 +8,7 @@ class User(Base):
   email_address = Column(String, unique = True)  
   hashed_password = Column(String) 
   status = Column(Boolean, default = True)
-  location = Column(String) 
+  location = Column(String)
   previous_chat_context = Column(String)
 
   

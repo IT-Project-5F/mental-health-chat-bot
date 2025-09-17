@@ -38,7 +38,6 @@ async def authentication_middleware(request: Request, call_next):
         if request.url.path.startswith(path):
             required_roles = roles
             break
-
     if required_roles:
         authorization = request.headers.get("Authorization")
         if not authorization:
@@ -73,7 +72,6 @@ async def authentication_middleware(request: Request, call_next):
                 content={"detail": f"Invalid token: {str(e)}"}
             )
     response = await call_next(request)
-   # print(response.headers)
     return response
 
 @app.get("/")

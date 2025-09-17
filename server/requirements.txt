@@ -10,6 +10,9 @@ python-dotenv
 numpy
 pydantic
 python-multipart
-sqlalchemy 
+sqlalchemy
 pyjwt
 passlib
+guardrails-ai
+fastuuid
+codecov>=2.1.13
