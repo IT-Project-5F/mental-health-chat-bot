@@ -11,6 +11,7 @@ from database_config import engine, SessionLocal
 from langchain_openai import OpenAIEmbeddings
 import openai
 from dotenv import load_dotenv
+from path.to.enhanced_rag import EnchancedRAGWithWebSearch
 
 load_dotenv()
 openai_client = openai.OpenAI()
@@ -219,7 +220,17 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         Use the conversation history to maintain context and provide personalized responses. \
         Reference previous conversations when relevant. \
         Always prioritize the user's wellbeing in your responses. \
-        If you don't have specific information, guide them to appropriate resources or suggest contacting services directly.
+        
+        Current situation:
+        - RAG Confidence: {assessment['confidence']:.1%}
+        - Reason for approach: {assessment['reason']}
+        - Sources used: {', '.join(sources_used) if sources_used else 'none'}
+
+        Instructions:
+        1. If database has specific services, prioritize those with contact details
+        2. If using web information, mention it's from online sources
+        3. If no good matches found, be honest and suggest alternatives
+        4. Always provide crisis resources if needed (Lifeline: 13 11 14)
         """
 
         # Build message history for context
@@ -302,3 +313,40 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
           please contact Lifeline at 13 11 14 or emergency services at 000.
           """
         
+
+enhanced_rag = EnchancedRAGWithWebSearch()
+
+def process_input_with_fallback(user_input, conversation_history=[]):
+    """
+    Enhanced version of your existing function with intelligent web fallback
+    """
+    # Keep your existing validation logic
+    if not user_input or not isinstance(user_input, str):
+        return "Please provide a valid question about mental health services."
+    
+    user_input = user_input.strip()
+    if len(user_input) == 0:
+        return "Please provide a question about mental health services."
+    
+    if len(user_input) > 1000:
+        return "Your message is quite long. Please try to be more concise for better assistance."
+    
+    # Keep your mental health trigger validation
+    try:
+        validation_result = MentalHealthModel().validate_input(user_input)
+        if validation_result.is_trigger:
+            print(f"Mental health trigger detected - Category: {validation_result.category}")
+            return validation_result.response
+    except Exception as e:
+        print(f"Mental health validation error: {e}")
+    
+    # Replace your RAG logic with the enhanced system
+    try:
+        return enhanced_rag.process_with_intelligent_fallback(
+            user_input=user_input,
+            conversation_history=conversation_history
+        )
+    except Exception as e:
+        print(f"Enhanced RAG error: {e}")
+        # Fallback to your original logic if enhanced system fails
+        return process_input_with_retrieval_continuous(user_input, conversation_history)
