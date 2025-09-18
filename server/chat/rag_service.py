@@ -320,7 +320,6 @@ def process_input_with_fallback(user_input, conversation_history=[]):
     """
     Enhanced version of your existing function with intelligent web fallback
     """
-    # Keep your existing validation logic
     if not user_input or not isinstance(user_input, str):
         return "Please provide a valid question about mental health services."
     
