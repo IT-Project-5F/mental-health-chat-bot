@@ -3,12 +3,13 @@ import ChatInput from './ChatInput';
 import SendBubble from './SenderBubble';
 import ResponseBubble from './ResponseBubble';
 import TypingAnimation from './TypingAnimation';
+import { request } from '../api.ts';
 
 /* Types and Interfaces */
 interface Message {
-    id: number;
-    text: string;
-    sender: 'user' | 'chatbot'
+  id: number;
+  text: string;
+  sender: 'user' | 'chatbot'
 }
 
 /**
@@ -17,33 +18,100 @@ interface Message {
  * - Auto scroll to the bottom when a new chat is sent. 
  * - Chat Container is draggable to max 50% of screen.
  * - Chat Container can be collapsed completely and expanded again. 
+ * - Chat Container can be enlarged by dragging using mouse (desktop only) or touch screen (for mobile or desktop)
  */
 const ChatContainer: React.FC = () => {    
-    // Example Messages
-    const [messages, setMessages] = useState<Message[]>([
-        { id: 1, text: 'Find me mental health services in Parkville.', sender: 'user' },
-        { id: 2, text: 'I found five clinics within 5km of Parkville.', sender: 'chatbot' },
-        { id: 3, text: 'I want to find clinics specialising in treatment for anxiety.', sender: 'user' },
-        { id: 4, text: 'View the map.', sender: 'chatbot' },
-    ])
+  // Example Messages
+  const [messages, setMessages] = useState<Message[]>([
+    { id: 1, text: 'Find me mental health services in Parkville.', sender: 'user' },
+    { id: 2, text: 'I found five clinics within 5km of Parkville.', sender: 'chatbot' },
+    { id: 3, text: 'I want to find clinics specialising in treatment for anxiety.', sender: 'user' },
+    { id: 4, text: 'View the map.', sender: 'chatbot' },
+  ])
+  const [sessionID, setSessionID] = useState<string | null>(null);
 
-    /* State */
-    const [isOpen, setIsOpen] = useState(true);
-    const [typing, setTyping] = useState(false);
+  /* State */
+  const [isOpen, setIsOpen] = useState(true);
+  const [typing, setTyping] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(window.innerWidth * 0.45); // Default Width of Chat Container (Desktop)
+  const [containerHeight, setContainerHeight] = useState(window.innerHeight * 0.5); // Default Height of Chat Container (Mobile)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  
+  /* Refs */
+  const messageEndRef = useRef<HTMLDivElement | null>(null); // End Position of Latest Message
+    
+  /* Effects */
+  // Auto scroll to bottom of latest sent message
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({behavior: 'smooth' });
+  }, [messages, typing]);
 
-    /* Refs */
-    // End Position of Latest Message
-    const messageEndRef = useRef<HTMLDivElement | null>(null);
+  // Updating the state for mobile screen width
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    /* Effects */
-    // Auto scroll to bottom of latest sent message
-    useEffect(() => {
-      messageEndRef.current?.scrollIntoView({behavior: 'smooth' });
-    }, [messages, typing]);
+  // Dragging functionality to resize the chat container
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
 
-    /* Functions */
-    // Send message
-    const handleSend = (text: string) => {
+      // Mobile Screen: Chat container is at the bottom and can be dragged upwards to enlarge
+      if (isMobile) {
+        const newHeight = window.innerHeight - e.clientY;
+        const minHeight = 100;
+        const maxHeight = window.innerHeight;
+        setContainerHeight(Math.min(Math.max(newHeight, minHeight), maxHeight));
+      }
+      // Desktop Screen: Chat container is at the right of the screen and can be dragged towards the middle to enlarge
+      else {
+        const maxWidth = window.innerWidth >= 1920 ? window.innerWidth * 0.33 : window.innerWidth * 0.5;
+        const minWidth = 300;
+        const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, minWidth), maxWidth);
+        setContainerWidth(newWidth);
+      }
+    };
+
+    // Handling of Touchscreen Action instead of mouse down
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      if (isMobile) {
+        const newHeight = window.innerHeight - e.touches[0].clientY;
+        setContainerHeight(Math.min(Math.max(newHeight, 100), window.innerHeight));
+      } 
+      // Desktop that is Touchscreen
+      else {
+        const maxWidth = window.innerWidth >= 1920 ? window.innerWidth * 0.33 : window.innerWidth * 0.5;
+        const newWidth = Math.min(Math.max(window.innerWidth - e.touches[0].clientX, 300), maxWidth);
+        setContainerWidth(newWidth);
+      }
+    };
+
+    const stopDragging = () => setIsDragging(false);
+
+    // Tracking of mouse movement for drag functionality
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', stopDragging);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', stopDragging);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', stopDragging);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', stopDragging);
+    };
+  }, [isDragging, isMobile]);
+
+
+  /* Send Message Function 
+   * Once a user sends a message, the helper function is called to handle the request to the backend
+   */
+  const handleSend = async (text: string) => {
     const newMessage: Message = {
       id: messages.length + 1,
       text,
@@ -53,47 +121,101 @@ const ChatContainer: React.FC = () => {
 
     // Display typing animation
     setTyping(true);
+    const start = Date.now();
 
-    // After delay, typing animation is hidden and response message is displayed
-    setTimeout(() => {
-      setTyping(false);
+    // API creates a new chat session automatically
+    try {
+      const body: any = { message: text };
+      if (sessionID) {
+        body.session_id = sessionID;
+      }
+
+      const response = await request('POST', '/api/chat', body);
+
+      // Minimum typing animation is 1000ms
+      const elapsed = Date.now() - start;
+      const minDelay = 700;
+      const waitTime = elapsed < minDelay ? minDelay - elapsed : 0;
+
+      setTimeout(() => {
+        if (response?.response) {
+          setSessionID(response.session_id);
+          setMessages((prev: Message[]) => [
+            ...prev,
+            { id: prev.length + 1, text: response.response, sender: 'chatbot' },
+          ]);
+        } 
+        else {
+          setMessages((prev: Message[]) => [
+            ...prev,
+            { id: prev.length + 1, text: "Sorry, something went wrong. Please try again.", sender: 'chatbot' },
+          ]);
+        }
+        setTyping(false);
+      }, waitTime);
+    } catch (e) {
       setMessages((prev: Message[]) => [
         ...prev,
-        { id: prev.length + 1, text: "I found the following results.", sender: 'chatbot' },
+        { id: prev.length + 1, text: "Sorry, something went wrong. Please try again.", sender: "chatbot" },
       ]);
-    }, 2000);
+      setTyping(false);
+    };
   };
 
 
-  /* Rendering: Case - Chat container is closed */
+  /* Rendering: Case - Chat Container is closed */
   if (!isOpen) {
     return (
       <button
-        className="fixed top-1/2 right-0 -translate-y-1/2 bg-[#014532] text-white px-2.5 py-6 rounded-l-lg shadow-md hover:bg-[#026b4c] 
-          transition-transform duration-300 ease-in-out hover:scale-110"
+        className={`fixed right-0 ${isMobile ? 'bottom-0 w-full flex justify-center items-center' : 'top-1/2 -translate-y-1/2'} 
+          bg-[#014532] text-white px-2.5 py-5 rounded-l-lg shadow-md hover:bg-[#026b4c] 
+          transition-transform duration-300 ease-in-out hover:scale-110`}
         onClick={() => setIsOpen(true)}
       >
-        {/* Left-pointing arrow */}
-        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
-          <path d="M17.5 20L12.5 15L17.5 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        {isMobile ? (
+          // Up-pointing arrow for mobile
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 17.5L15 12.5L20 17.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        ) : (
+          // Left-pointing arrow for desktop
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
+            <path d="M17.5 20L12.5 15L17.5 10" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
       </button>
     );
   }
 
 
-  /* Rendering */
+  /* Rendering: Case - Chat Container is open */
   return (
-    <div className="relative flex flex-col h-full sm:h-screen w-screen sm:w-full bg-[#014532]">
-      {/* Tab to collaspe chat container */}
+    <div 
+      style={isMobile ? { height: containerHeight } : { width: containerWidth }}
+      className={`fixed ${isMobile ? 'bottom-0 left-0 w-full rounded-t-lg' : 'right-0 top-0 h-full'}
+        flex flex-col bg-[#014532] shadow-2xl border-l border-gray-700`}
+    >
+      {/* Tab to drag or collapse chat container */}
       <button
-        className="absolute -left-9.5 top-1/2 -translate-y-1/2 bg-[#014532] p-1 py-4 rounded-l-lg hover:bg-[#026b4c] z-10"
+        onMouseDown={() => setIsDragging(true)}
+        onTouchStart={() => setIsDragging(true)}
+        className={`absolute z-10 p-1 py-2 bg-[#014532] hover:bg-[#026b4c] transition-colors duration-200
+          ${isMobile 
+            ? 'top-0 left-1/2 -translate-x-1/2 rounded-b-lg cursor-ns-resize' 
+            : '-left-9.5 top-1/2 -translate-y-1/2 rounded-l-lg cursor-ew-resize'}`}
         onClick={() => setIsOpen(false)}
       >
-        {/* Right-pointing arrow */}
-        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
-          <path d="M12.5 10L17.5 15L12.5 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
+        {isMobile ? (
+          // Down-pointing arrow for mobile when chat is open
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 12.5L15 17.5L10 12.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          ) : (
+          // Right-pointing arrow for desktop when chat is open
+          <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
+            <path d="M12.5 10L17.5 15L12.5 20" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          )}
       </button>
       
       {/* Header */}
@@ -110,16 +232,18 @@ const ChatContainer: React.FC = () => {
       </div>
       
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) =>
-          msg.sender === 'user' ? (
+      <div className="flex-1 flex-col overflow-y-auto p-4 space-y-6">
+        <div className="max-w-[600px] mx-auto space-y-6">
+          {messages.map((msg) =>
+            msg.sender === 'user' ? (
             <SendBubble key={msg.id} text={msg.text} />
-          ) : (
-            <ResponseBubble key={msg.id} text={msg.text} />
-          )
-        )}
-        {typing && <TypingAnimation />}
-        <div ref={messageEndRef} />
+            ) : (
+              <ResponseBubble key={msg.id} text={msg.text} />
+            )
+          )}
+          {typing && <TypingAnimation />}
+          <div ref={messageEndRef} />
+        </div>
       </div>
       {/* Input */}
       <ChatInput sendMessage={handleSend} responsePending={typing} />

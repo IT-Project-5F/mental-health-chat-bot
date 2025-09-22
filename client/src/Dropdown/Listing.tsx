@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CardItem } from "./CardItem.tsx"
+import { CardItem } from "./CardItem";
 
 
 function Listing() {
