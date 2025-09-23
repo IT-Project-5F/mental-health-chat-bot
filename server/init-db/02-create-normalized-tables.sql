@@ -1,49 +1,31 @@
--- Drop existing tables if they exist
-DROP TABLE IF EXISTS embedding_table CASCADE;
-DROP TABLE IF EXISTS raw_record_storage CASCADE;
-DROP TABLE IF EXISTS service_region CASCADE;
-DROP TABLE IF EXISTS postcode CASCADE;
-DROP TABLE IF EXISTS delivery_method CASCADE;
-DROP TABLE IF EXISTS workforce_type CASCADE;
-DROP TABLE IF EXISTS referral_pathway CASCADE;
-DROP TABLE IF EXISTS cost CASCADE;
-DROP TABLE IF EXISTS service_type CASCADE;
-DROP TABLE IF EXISTS level_of_care CASCADE;
-DROP TABLE IF EXISTS target_population CASCADE;
-DROP TABLE IF EXISTS service_campus CASCADE;
-DROP TABLE IF EXISTS campus CASCADE;
-DROP TABLE IF EXISTS service CASCADE;
-DROP TABLE IF EXISTS region CASCADE;
-DROP TABLE IF EXISTS organisation CASCADE;
-
 -- Create Organisation table
-CREATE TABLE organisation (
+CREATE TABLE IF NOT EXISTS organisation (
     organisation_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organisation_name VARCHAR(255) NOT NULL
 );
 
 -- Create Region table
-CREATE TABLE region (
+CREATE TABLE IF NOT EXISTS region (
     region_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     region_name VARCHAR(255) NOT NULL
 );
 
 -- Create Service table
-CREATE TABLE service (
+CREATE TABLE IF NOT EXISTS service (
     service_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organisation_key UUID NOT NULL REFERENCES organisation(organisation_key),
     service_name VARCHAR(255) NOT NULL
 );
 
 -- Create Campus table
-CREATE TABLE campus (
+CREATE TABLE IF NOT EXISTS campus (
     campus_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organisation_key UUID NOT NULL REFERENCES organisation(organisation_key),
     campus_name VARCHAR(255) NOT NULL
 );
 
--- Create ServiceCampus junction table with additional attributes
-CREATE TABLE service_campus (
+-- Create ServiceCampus junction table
+CREATE TABLE IF NOT EXISTS service_campus (
     service_campus_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_key UUID NOT NULL REFERENCES service(service_key),
     campus_key UUID NOT NULL REFERENCES campus(campus_key),
@@ -64,65 +46,65 @@ CREATE TABLE service_campus (
 );
 
 -- Create lookup tables
-CREATE TABLE target_population (
+CREATE TABLE IF NOT EXISTS target_population (
     target_population_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_campus_key UUID NOT NULL REFERENCES service_campus(service_campus_key),
     target_population VARCHAR(255)
 );
 
-CREATE TABLE level_of_care (
+CREATE TABLE IF NOT EXISTS level_of_care (
     level_of_care_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_campus_key UUID NOT NULL REFERENCES service_campus(service_campus_key),
     level_of_care_num INTEGER,
     level_of_care VARCHAR(255)
 );
 
-CREATE TABLE service_type (
+CREATE TABLE IF NOT EXISTS service_type (
     service_type_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_campus_key UUID NOT NULL REFERENCES service_campus(service_campus_key),
     service_type_num INTEGER,
     service_type VARCHAR(255)
 );
 
-CREATE TABLE cost (
+CREATE TABLE IF NOT EXISTS cost (
     cost_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_campus_key UUID NOT NULL REFERENCES service_campus(service_campus_key),
     cost VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE referral_pathway (
+CREATE TABLE IF NOT EXISTS referral_pathway (
     referral_pathway_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_campus_key UUID NOT NULL REFERENCES service_campus(service_campus_key),
     referral_pathway VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE workforce_type (
+CREATE TABLE IF NOT EXISTS workforce_type (
     workforce_type_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_campus_key UUID NOT NULL REFERENCES service_campus(service_campus_key),
     workforce_type VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE delivery_method (
+CREATE TABLE IF NOT EXISTS delivery_method (
     delivery_method_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     service_campus_key UUID NOT NULL REFERENCES service_campus(service_campus_key),
     delivery_method VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE postcode (
+CREATE TABLE IF NOT EXISTS postcode (
     postcode_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     region_key UUID NOT NULL REFERENCES region(region_key),
     postcode VARCHAR(10) NOT NULL
 );
 
 -- Create ServiceRegion junction table
-CREATE TABLE service_region (
+CREATE TABLE IF NOT EXISTS service_region (
     service_campus_key UUID NOT NULL REFERENCES service_campus(service_campus_key),
     region_key UUID NOT NULL REFERENCES region(region_key),
     PRIMARY KEY (service_campus_key, region_key)
 );
 
 -- Create RawRecordStorage table
-CREATE TABLE raw_record_storage (
+CREATE TABLE IF NOT EXISTS raw_record_storage (
     raw_record_storage_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     csv_record_index INTEGER UNIQUE NOT NULL,
     organisation_key UUID NOT NULL REFERENCES organisation(organisation_key),
@@ -138,21 +120,21 @@ CREATE TABLE raw_record_storage (
 );
 
 -- Create EmbeddingStorage table
-CREATE TABLE embedding_table (
+CREATE TABLE IF NOT EXISTS embedding_table (
     embedding_record_key UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     record_key UUID NOT NULL REFERENCES raw_record_storage(raw_record_storage_key),
     token INTEGER,
     embedding vector(1536)
 );
 
--- Create indexes for better query performance
-CREATE INDEX idx_organisation_name ON organisation(organisation_name);
-CREATE INDEX idx_service_org ON service(organisation_key);
-CREATE INDEX idx_campus_org ON campus(organisation_key);
-CREATE INDEX idx_service_campus_service ON service_campus(service_key);
-CREATE INDEX idx_service_campus_campus ON service_campus(campus_key);
-CREATE INDEX idx_raw_record_csv_index ON raw_record_storage(csv_record_index);
-CREATE INDEX idx_embedding_record ON embedding_table(record_key);
+-- Create indexes
+CREATE INDEX IF NOT EXISTS idx_organisation_name ON organisation(organisation_name);
+CREATE INDEX IF NOT EXISTS idx_service_org ON service(organisation_key);
+CREATE INDEX IF NOT EXISTS idx_campus_org ON campus(organisation_key);
+CREATE INDEX IF NOT EXISTS idx_service_campus_service ON service_campus(service_key);
+CREATE INDEX IF NOT EXISTS idx_service_campus_campus ON service_campus(campus_key);
+CREATE INDEX IF NOT EXISTS idx_raw_record_csv_index ON raw_record_storage(csv_record_index);
+CREATE INDEX IF NOT EXISTS idx_embedding_record ON embedding_table(record_key);
 
--- Create vector similarity search index (will be created after data insertion)
--- CREATE INDEX embedding_idx ON embedding_table USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);
+-- Vector similarity search index (create after data insertion)
+-- CREATE INDEX IF NOT EXISTS embedding_idx ON embedding_table USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100);

@@ -5,7 +5,7 @@ from jwt import InvalidTokenError
 import jwt
 from sqlalchemy.orm import Session
 from .Model import TokenData 
-from users.Model import User
+from users.Model import User, AuxillaryUser
 from .Database import sessionLocal, engine, Base 
 from .Utils import get_password_hash, verify_passowrd, create_access_token, ALGORITHM, SECRET_KEY
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/api/auth/login")
@@ -16,6 +16,9 @@ def get_database():
       yield database 
   finally : 
       database.close()
+
+def get_auxillary_user(db : Session, username : str): 
+    return db.query(AuxillaryUser).filter(AuxillaryUser.username == username).first() 
 
 def get_user(db : Session, username : str): 
     return db.query(User).filter(User.username == username).first()

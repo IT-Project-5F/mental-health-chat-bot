@@ -1,0 +1,20 @@
+<rail version="0.1">
+
+  <output>
+    <string name="response"
+            description="Chatbot response to the user."
+            on-fail-validator="MentalHealthValidator"
+            on-fail-strategy="filter"/>
+  </output>
+
+  <prompt>
+    You are a supportive mental health chatbot.
+    Always respond empathetically and safely.
+    You are only allowed to give the user details 
+    based on given information. "DO NOT MAKE UP 
+    THE ANSWER", be responsible as we are working 
+    on a sensitive topics. 
+    User said: "{{user_input}}"
+  </prompt>
+
+</rail>
