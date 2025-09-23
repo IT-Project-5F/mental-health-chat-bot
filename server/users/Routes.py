@@ -1,10 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Annotated
 from sqlalchemy.orm import Session
 from typing import List
-from auth.Dependencies import get_current_user, get_database
+from auth.Schemas import UserResponse
+from auth.Dependencies import get_current_user, get_database, get_auxillary_user, get_user
 from auth.Utils import get_password_hash
 from .Schemas import User, UserUpdate
-from .Model import User as UserModel
+from .Model import User as UserModel, AuxillaryUser
+import resend
+import os
+from logging import getLogger
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+logger = getLogger(__name__)
 
 router = APIRouter()
 
@@ -17,10 +28,17 @@ def list_users(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_database),
-    current_user: UserModel = Depends(get_current_user)
 ):
     users = db.query(UserModel).offset(skip).limit(limit).all()
     return users
+
+@router.get("/pending", response_model = List[User])
+def list_pending_users(
+  skip : int = 0, 
+  limit : int = 0, 
+  db : Session = Depends(get_database)
+): 
+  return db.query(AuxillaryUser).offset(skip).limit(limit).all()
 
 @router.put("/{user_id}", response_model=User)
 def update_user(
@@ -64,3 +82,115 @@ def delete_user(
     db.delete(user)
     db.commit()
     return None
+
+@router.post("/accept", response_model=UserResponse)
+async def accept_user(username : str, db: Annotated[Session, Depends(get_database)]):
+    auxillary_db_user = get_auxillary_user(db, username)
+    if auxillary_db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Pending user not found"
+        )
+    
+    # Check if user already exists in main table
+    existing_user = get_user(db, username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User already exists in main system"
+        )
+    
+    # Create the main user
+    db_user = UserModel(
+        username=auxillary_db_user.username,
+        hashed_password=auxillary_db_user.hashed_password,
+        email_address=auxillary_db_user.email_address,
+        location=auxillary_db_user.location
+    )
+    
+    email_address = auxillary_db_user.email_address
+    
+    try:
+        # Add user to main table
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        
+        # Remove from auxiliary table
+        db.delete(auxillary_db_user)
+        db.commit()
+        
+        # Send acceptance email if email address is provided
+        if email_address:
+            try:
+                r = resend.Emails.send({
+                    "from": "Welcome <onboarding@resend.dev>",
+                    "to": ["leminhquan9829@gmail.com"],
+                    "subject": "Welcome! Your account has been approved",
+                    "html": """
+                    <h2>Congratulations!</h2>
+                    <p>Your account has been approved and you now have full access to the system.</p>
+                    <p>You can now log in using your credentials.</p>
+                    <p>Welcome aboard!</p>
+                    """
+                })
+                logger.info(f"Welcome email sent successfully to {email_address}")
+            except Exception as email_error:
+                db.rollback()
+                logger.error(f"Failed to send welcome email to {email_address}: {email_error}")
+                raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Error while sending accepted emails")
+        
+        return db_user
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error accepting user {username}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error processing user acceptance"
+        )
+
+@router.delete("/decline/{username}")
+async def decline_user(username: str, db: Annotated[Session, Depends(get_database)]):
+    auxillary_db_user = get_auxillary_user(db, username)
+    if auxillary_db_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Pending user not found"
+        )
+    
+    email_address = auxillary_db_user.email_address
+    
+    try:
+        db.delete(auxillary_db_user)
+        db.commit()
+        
+        # Send rejection email if email address is provided
+        if email_address:
+            try:
+                r = resend.Emails.send({
+                    "from": "Sorry <onboarding@resend.dev>",
+                    "to": ["leminhquan9829@gmail.com"],
+                    "subject": "Application Update",
+                    "html": """
+                    <h2>Application Status Update</h2>
+                    <p>Thank you for your interest in our system.</p>
+                    <p>Unfortunately, we are unable to approve your application at this time.</p>
+                    <p>If you have any questions, please feel free to contact us.</p>
+                    """
+                })
+                logger.info(f"Rejection email sent to {email_address}")
+            except Exception as email_error:
+                db.rollback()
+                logger.error(f"Failed to send rejection email to {email_address}: {email_error}")
+                raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Error while sending accepted emails")
+        
+        return {"message": "User application declined successfully"}
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error declining user {username}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error processing user decline"
+        )

@@ -8,7 +8,7 @@ import os
 sys.path.append('/app')
 
 try:
-    from chat.rag_service import get_top3_similar_docs, get_embeddings_vector, process_input_with_retrieval_continuous
+    from chat.Rag_service import get_top3_similar_docs, get_embeddings_vector, process_input_with_retrieval_continuous
 
     print("=== Testing New Normalized Database RAG System ===\n")
 

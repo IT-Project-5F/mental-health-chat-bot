@@ -16,3 +16,4 @@ passlib
 guardrails-ai
 fastuuid
 codecov>=2.1.13
+resend
