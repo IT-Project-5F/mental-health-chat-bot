@@ -5,7 +5,9 @@ class UserBase(BaseModel):
     
 class UserCreate(UserBase): 
     password : str 
-
+    email_address : str 
+    location : str 
+    
 class UserResponse(UserBase): 
     id : int 
     class Config : 

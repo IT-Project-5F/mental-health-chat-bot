@@ -16,7 +16,7 @@ conn_params = {
     'host': os.getenv('POSTGRES_HOST', 'localhost'),
     'database': os.getenv('POSTGRES_DB', 'mental_health_db'),
     'user': os.getenv('POSTGRES_USER', 'mental_health_user'),
-    'password': os.getenv('POSTGRES_PASSWORD', 'mental_health_password'),
+    'password': os.getenv('POSTGRES_PASSWORD', 'password'),
     'port': '5432'
 }
 
