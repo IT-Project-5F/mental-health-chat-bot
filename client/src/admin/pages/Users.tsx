@@ -1,32 +1,29 @@
-import type { Service } from "./Columns"
-import { columns } from "./Columns"
+import type { User } from "./Columns"
+import { userColumns } from "./Columns"
 import { DataTable } from "../../components/ui/data-table"
 import { useEffect, useState } from "react"
 
-const initialData: Service[] = [
+const initialData: User[] = [
     {
         name: "13YARN",
         email: "13yarn@gmail.com",
-        status: "active",
-        type: "online",
+        verified: "pending",
     },
     {
         name: "1800 My Options",
         email: "13yarn@gmail.com",
-        status: "active",
-        type: "online",
+        verified: "pending",
     },
     {
         name: "Australian Psychology Society",
         email: "13yarn@gmail.com",
-        status: "active",
-        type: "online",
+        verified: "verified",
     },
 ]
 
-function Services() {
+function Users() {
 
-    const [data, setData] = useState<Service[]>([])
+    const [data, setData] = useState<User[]>([])
 
     useEffect(() => {
         setData(initialData)
@@ -34,9 +31,9 @@ function Services() {
 
     return (
         <div className="container mx-auto py-0">
-            <DataTable columns={columns} data={data} pageSize={2} />
+            <DataTable columns={userColumns} data={data} pageSize={2} />
         </div>
     )
 };
 
-export default Services;
+export default Users;
