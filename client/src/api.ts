@@ -28,6 +28,7 @@ export const request = async(method: string, path: string, data: object | null =
 
     // Making requests to backend API and handling of responses
     try {
+        console.log(options);
         const response = await fetch(BaseApiURL + path, options);
         
         // Case: Encountered API error when waiting for response

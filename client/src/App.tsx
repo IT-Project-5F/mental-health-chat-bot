@@ -1,13 +1,14 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Map from "./Map.tsx";
-import Listing from "./dropdown/Listing.tsx";
+import Listing from "./Dropdown/Listing.tsx";
 import Login from "./Login.tsx";
 import Register from "./Register.tsx";
 import ChatContainer from "./chat/ChatContainer.tsx";
 //import ProtectedRoute from "./ProtectedRoute.tsx";
 import Portal from "./admin/Portal.tsx"
 import QuickClose from "./QuickClose.tsx";
+import ServiceCreationForm from "./formComponents/ServiceCreationForm.tsx";
 
 function App() {
 
@@ -26,6 +27,8 @@ function App() {
               </ProtectedRoute>
           }
         /> */}
+        {/* TEMP - SERVICE CREATION FORM */}
+        <Route path="/service-creation" element={<ServiceCreationForm />} />
         <Route
           path="/admin"
           element={
