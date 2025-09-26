@@ -32,15 +32,45 @@ export const columns: ColumnDef<Service>[] = [
     },
     {
         accessorKey: "email",
-        header: "Email",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center">
+                    <span>Email</span>
+                    <ArrowUpDown
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
+                    />
+                </div>
+            )
+        },
     },
     {
         accessorKey: "status",
-        header: "Status",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center">
+                    <span>Status</span>
+                    <ArrowUpDown
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
+                    />
+                </div>
+            )
+        },
     },
     {
         accessorKey: "type",
-        header: "Type",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center">
+                    <span>Type</span>
+                    <ArrowUpDown
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
+                    />
+                </div>
+            )
+        },
     }
 ]
 

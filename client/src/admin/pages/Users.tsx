@@ -2,36 +2,50 @@ import type { User } from "./Columns"
 import { userColumns } from "./Columns"
 import { DataTable } from "../../components/ui/data-table"
 import { useEffect, useState } from "react"
+import { request } from "@/api"
 
-const initialData: User[] = [
-    {
-        name: "13YARN",
-        email: "13yarn@gmail.com",
-        verified: "pending",
-    },
-    {
-        name: "1800 My Options",
-        email: "13yarn@gmail.com",
-        verified: "pending",
-    },
-    {
-        name: "Australian Psychology Society",
-        email: "13yarn@gmail.com",
-        verified: "verified",
-    },
-]
+type UserProps = {
+    pageSize?: number
+}
 
-function Users() {
+function Users({ pageSize = 20 }: UserProps) {
 
     const [data, setData] = useState<User[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        setData(initialData)
-    }, [])
+            const fetchServices = async () => {
+                setLoading(true)
+                setError(null)
+    
+                const result = await request("GET", "/api/users")
+    
+                if (result.requestError) {
+                    setError(result.message)
+                } else {
+                    setData(result)
+                }
+    
+                setLoading(false)
+            }
+            fetchServices()
+        }, [])
+    
+        if (loading) {
+            return (
+                <div>Loading...</div>
+            )
+        }
+        if (error) {
+            return (
+                <div className="text-red-500">Error: {error} </div>
+            )
+        }
 
     return (
         <div className="container mx-auto py-0">
-            <DataTable columns={userColumns} data={data} pageSize={2} />
+            <DataTable columns={userColumns} data={data} pageSize={pageSize} />
         </div>
     )
 };
