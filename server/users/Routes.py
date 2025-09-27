@@ -5,7 +5,7 @@ from typing import List
 from auth.Schemas import UserResponse
 from auth.Dependencies import get_current_user, get_database, get_auxillary_user, get_user
 from auth.Utils import get_password_hash
-from .Schemas import User, UserUpdate
+from .Schemas import User, UserUpdate, AdminCreate
 from .Model import User as UserModel, AuxillaryUser
 import resend
 import os
@@ -186,11 +186,63 @@ async def decline_user(username: str, db: Annotated[Session, Depends(get_databas
                 raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Error while sending accepted emails")
         
         return {"message": "User application declined successfully"}
-        
+
     except Exception as e:
         db.rollback()
         logger.error(f"Error declining user {username}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error processing user decline"
+        )
+
+@router.post("/create-admin", response_model=User)
+def create_admin_user(
+    admin_data: AdminCreate,
+    db: Session = Depends(get_database),
+    current_user: UserModel = Depends(get_current_user)
+):
+    """
+    Create a new admin user. Only existing admin users can create new admin users.
+    """
+    # Check if current user is admin
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin users can create new admin users"
+        )
+
+    # Check if username already exists
+    existing_user = get_user(db, admin_data.username)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already exists"
+        )
+
+    try:
+        # Create new admin user
+        hashed_password = get_password_hash(admin_data.password)
+        new_admin = UserModel(
+            username=admin_data.username,
+            email_address=admin_data.email_address,
+            hashed_password=hashed_password,
+            status=True,
+            location=admin_data.location,
+            role="admin",
+            previous_chat_context=""
+        )
+
+        db.add(new_admin)
+        db.commit()
+        db.refresh(new_admin)
+
+        logger.info(f"New admin user created: {admin_data.username} by {current_user.username}")
+        return new_admin
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error creating admin user {admin_data.username}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error creating admin user"
         )

@@ -9,11 +9,46 @@ from database.Routes import router as database_router
 from auth.Database import Base, engine
 import jwt
 from jwt import PyJWTError
-
-SECRET_KEY = "your-secret-key"
-ALGORITHM = "HS256"
+from auth.Utils import SECRET_KEY, ALGORITHM
 
 Base.metadata.create_all(bind=engine)
+
+# Seed admin user on startup
+def seed_admin_user():
+    """Ensure admin user exists"""
+    try:
+        from sqlalchemy.orm import Session
+        from sqlalchemy import select
+        from users.Model import User
+        from auth.Utils import get_password_hash
+
+        with Session(engine) as session:
+            # Check if admin user exists
+            stmt = select(User).where(User.username == "admin")
+            existing_admin = session.execute(stmt).scalar_one_or_none()
+
+            if not existing_admin:
+                # Create admin user
+                hashed_password = get_password_hash("password123")
+                admin_user = User(
+                    username="admin",
+                    email_address="admin@example.com",
+                    hashed_password=hashed_password,
+                    status=True,
+                    location="System",
+                    role="admin",
+                    previous_chat_context=""
+                )
+                session.add(admin_user)
+                session.commit()
+                print("✅ Admin user created: username=admin, password=password123")
+            else:
+                print("✅ Admin user already exists")
+    except Exception as e:
+        print(f"❌ Error seeding admin user: {e}")
+
+# Seed admin user
+seed_admin_user()
 
 app = FastAPI(title="Mental Health Chat Bot API", version="1.0.0")
 
@@ -32,15 +67,19 @@ app.add_middleware(
 )
 
 @app.middleware("http")
-async def authentication_middleware(request: Request, call_next):
-    path_permissions = { 
-        "/api/chat/": ["chat"]
+async def admin_authentication_middleware(request: Request, call_next):
+    """Authentication middleware for admin-only endpoints"""
+    admin_only_paths = {
+        "/api/database/": ["admin"],
+        "/api/users/": ["admin"]
     }
+
     required_roles = None
-    for path, roles in path_permissions.items():
+    for path, roles in admin_only_paths.items():
         if request.url.path.startswith(path):
             required_roles = roles
             break
+
     if required_roles:
         authorization = request.headers.get("Authorization")
         if not authorization:
@@ -50,11 +89,17 @@ async def authentication_middleware(request: Request, call_next):
             )
 
         try:
-            scheme, token = authorization.split()
+            auth_parts = authorization.split()
+            if len(auth_parts) != 2:
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "Invalid authorization header format. Expected 'Bearer <token>'"}
+                )
+            scheme, token = auth_parts
             if scheme.lower() != "bearer":
                 return JSONResponse(
                     status_code=401,
-                    content={"detail": "Invalid authentication scheme"}
+                    content={"detail": "Invalid authentication scheme. Expected 'Bearer'"}
                 )
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             user_role = payload.get("role")
@@ -63,7 +108,7 @@ async def authentication_middleware(request: Request, call_next):
                     status_code=403,
                     content={"detail": f"Access denied. Required roles: {required_roles}"}
                 )
-            
+
             request.state.user = {
                 "username": payload.get("sub"),
                 "role": user_role
@@ -74,6 +119,7 @@ async def authentication_middleware(request: Request, call_next):
                 status_code=401,
                 content={"detail": f"Invalid token: {str(e)}"}
             )
+
     response = await call_next(request)
     return response
 

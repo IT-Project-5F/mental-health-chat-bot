@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from .Rag_service import process_input_with_retrieval_continuous
+from .rag_service import process_input_with_retrieval_continuous
 from guardrails import Guard
 from .Model import *
 import logging

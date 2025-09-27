@@ -11,7 +11,7 @@ from database_config import engine, SessionLocal
 from langchain_openai import OpenAIEmbeddings
 import openai
 from dotenv import load_dotenv
-from path.to.enhanced_rag import EnchancedRAGWithWebSearch
+from .enhanced_rag import EnhancedRAGWithWebSearch
 
 load_dotenv()
 openai_client = openai.OpenAI()
@@ -213,6 +213,13 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         # Get similar documents with full service details
         related_docs = get_top3_similar_docs(query_embedding)
 
+        # Default assessment values for standard RAG processing
+        assessment = {
+            'confidence': 0.8,
+            'reason': 'Using local database search'
+        }
+        sources_used = ['Local mental health database']
+
         system_message = f"""
         You are a friendly and helpful mental health services assistant. \
         You can answer questions about mental health services in Australia. \
@@ -220,7 +227,7 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         Use the conversation history to maintain context and provide personalized responses. \
         Reference previous conversations when relevant. \
         Always prioritize the user's wellbeing in your responses. \
-        
+
         Current situation:
         - RAG Confidence: {assessment['confidence']:.1%}
         - Reason for approach: {assessment['reason']}
@@ -314,7 +321,7 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
           """
         
 
-enhanced_rag = EnchancedRAGWithWebSearch()
+enhanced_rag = EnhancedRAGWithWebSearch()
 
 def process_input_with_fallback(user_input, conversation_history=[]):
     """
