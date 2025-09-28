@@ -10,7 +10,7 @@ RUN apt-get update && \
     gcc \
     g++ \
     libc6-dev \
-    libstdc++-dev \
+    libstdc++-10-dev \
     curl \
     git \
     libssl-dev \
