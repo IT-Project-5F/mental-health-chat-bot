@@ -41,7 +41,8 @@ def get_current_user(db : Annotated[Session, Depends(get_database)],
     try : 
         payload = jwt.decode(token, SECRET_KEY, algorithms = [ALGORITHM])
         username = payload.get("sub")
-        if username is None : 
+        aim = payload.get("aim")
+        if username is None or aim == "reset": 
             raise credentials_exception
         token_data = TokenData(username = username) 
     except InvalidTokenError : 

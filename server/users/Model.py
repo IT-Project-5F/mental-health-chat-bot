@@ -5,7 +5,7 @@ class User(Base):
   __tablename__ = "UserInformations" 
   id = Column(Integer, primary_key = True, index = True) 
   username = Column(String, unique = True, index = True)
-  email_address = Column(String, unique = True)  
+  email_address = Column(String, unique = True, nullable = False)  
   hashed_password = Column(String) 
   status = Column(Boolean, default = True)
   location = Column(String)

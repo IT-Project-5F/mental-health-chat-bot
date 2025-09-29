@@ -1,7 +1,6 @@
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from auth.Routes import router as auth_router
 from users.Routes import router as users_router
 from chat.Routes import router as chat_router
@@ -34,7 +33,8 @@ app.add_middleware(
 @app.middleware("http")
 async def authentication_middleware(request: Request, call_next):
     path_permissions = { 
-        "/api/chat/": ["chat"]
+        "/api/chat/": ["user"],
+        "/api/users/" : ["user"] 
     }
     required_roles = None
     for path, roles in path_permissions.items():
@@ -44,35 +44,50 @@ async def authentication_middleware(request: Request, call_next):
     if required_roles:
         authorization = request.headers.get("Authorization")
         if not authorization:
-            return JSONResponse(
-                status_code=401,
-                content={"detail": "Missing Authorization header"}
+            raise HTTPException(
+                status_code = 401,
+                detail = "Missing Authorization header"
             )
 
         try:
             scheme, token = authorization.split()
             if scheme.lower() != "bearer":
-                return JSONResponse(
-                    status_code=401,
-                    content={"detail": "Invalid authentication scheme"}
-                )
+                raise HTTPException(
+                    status_code = 401,
+                    detail = "Invalid authentication scheme"
+                )  
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-            user_role = payload.get("role")
-            if user_role not in required_roles:
-                return JSONResponse(
-                    status_code=403,
-                    content={"detail": f"Access denied. Required roles: {required_roles}"}
-                )
-            
-            request.state.user = {
-                "username": payload.get("sub"),
-                "role": user_role
-            }
+            if payload.get("aim") == "reset": 
+                username = payload.get("username")
+                user_email = payload.get("user_email")
+                if not username or not user_email: 
+                    raise HTTPException( 
+                        status_code = 401, 
+                        detail =  "Invalid token payload"
+                    )  
+                request.state.user = {
+                   "aim" : "reset",  
+                   "username" : username, 
+                   "email" : user_email
+                }     
+            else:
+                user_role = payload.get("role")
+                if user_role not in required_roles:
+                    raise HTTPException(
+                        status_code=403,
+                        detail = f"Access denied. Required roles: {required_roles}"
+                    )
+                
+                request.state.user = {
+                    "aim" : "using", 
+                    "username": payload.get("sub"),
+                    "role": user_role
+                }
 
         except PyJWTError as e:
-            return JSONResponse(
+            return HTTPException(
                 status_code=401,
-                content={"detail": f"Invalid token: {str(e)}"}
+                detail =  f"Invalid token: {str(e)}"
             )
     response = await call_next(request)
     return response

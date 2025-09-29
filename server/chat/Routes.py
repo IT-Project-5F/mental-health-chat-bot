@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from .Rag_service import process_input_with_retrieval_continuous
+from .rag_service import process_input_with_retrieval_continuous
 from guardrails import Guard
 from .Model import *
 import logging
@@ -54,7 +54,6 @@ async def chat_endpoint(request: ChatRequest):
     """
     Process user chat message using RAG system with conversation history
     """
-    print(request)
     try:
         # Create new session if none provided
         if not request.session_id:
@@ -87,7 +86,7 @@ async def chat_endpoint(request: ChatRequest):
         )
         conversation_history.append(user_message.dict())
         # Process the message with RAG and conversation context
-        response = process_input_with_retrieval_continuous(
+        response = await process_input_with_retrieval_continuous(
             request.message, 
             [{"role": msg["role"], "content": msg["content"]} for msg in conversation_history[:-1]]
         )
