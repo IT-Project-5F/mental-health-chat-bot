@@ -3,10 +3,16 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .Validator import MentalHealthModel 
-from .websearch import EnhancedRAGWithWebSearch
+import numpy as np
+from sqlalchemy.orm import Session
+from sqlalchemy import select
+from models import *
+from database_config import engine, SessionLocal
+from langchain_openai import OpenAIEmbeddings
+import openai
+from dotenv import load_dotenv
+from path.to.enhanced_rag import EnchancedRAGWithWebSearch
 from .Utils import *
-
-enhanced_rag = EnhancedRAGWithWebSearch()
 
 def process_input_with_retrieval_continuous(user_input, conversation_history=[]):
     """
@@ -15,14 +21,14 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
     # Input validation
     if not user_input or not isinstance(user_input, str):
         return "Please provide a valid question about mental health services."
-    
+
     user_input = user_input.strip()
     if len(user_input) == 0:
         return "Please provide a question about mental health services."
-    
+
     if len(user_input) > 1000:
         return "Your message is quite long. Please try to be more concise for better assistance."
-    
+
     # Mental health validation using our new model
     try:
 
@@ -32,13 +38,13 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
             # Log the trigger for monitoring
             print(f"Mental health trigger detected - Category: {validation_result.category}, "
                   f"Word: '{validation_result.matched_word}', Confidence: {validation_result.confidence:.2f}")
-            
+
             # Return the mental health response immediately
             return validation_result.response
     except Exception as e:
         print(f"Mental health validation error: {e}")
         # Continue with normal processing if validation fails
-    
+
     # Continue with normal RAG processing
     try:
         delimiter = "```"
@@ -51,6 +57,13 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         # Get similar documents with full service details
         related_docs = get_top3_similar_docs(query_embedding)
 
+        # Default assessment values for standard RAG processing
+        assessment = {
+            'confidence': 0.8,
+            'reason': 'Using local database search'
+        }
+        sources_used = ['Local mental health database']
+
         system_message = f"""
         You are a friendly and helpful mental health services assistant. \
         You can answer questions about mental health services in Australia. \
@@ -58,7 +71,7 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         Use the conversation history to maintain context and provide personalized responses. \
         Reference previous conversations when relevant. \
         Always prioritize the user's wellbeing in your responses. \
-        
+
         Current situation:
         - RAG Confidence: {assessment['confidence']:.1%}
         - Reason for approach: {assessment['reason']}
@@ -126,31 +139,35 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
             formatted_services.append(service_text)
 
         # Add current user input and retrieved documents
-        services_content = "\n".join(formatted_services) if formatted_services else "No specific services found for this query."
-        
+        services_content = "\n".join(
+            formatted_services) if formatted_services else "No specific services found for this query."
+
         user_message = f"""
         User question: {delimiter}{user_input}{delimiter}
-        
+
         Please provide a helpful response based on the following relevant mental health services information:
-        
+
         {services_content}
-        
+
         If the services don't directly match the user's needs, provide general guidance and suggest they contact services directly or look for more specific resources.
         """
-        
+
         messages.append({"role": "user", "content": user_message})
 
         final_response = get_completion_from_messages(messages)
-        
+
         return final_response
-        
+
     except Exception as e:
         print(f"Error in RAG processing: {e}")
         return f"""
           I'm experiencing some technical difficulties. Please try again, or if you need immediate help, 
           please contact Lifeline at 13 11 14 or emergency services at 000.
           """
-        
+
+
+enhanced_rag = EnchancedRAGWithWebSearch()
+
 
 def process_input_with_fallback(user_input, conversation_history=[]):
     """
@@ -158,14 +175,14 @@ def process_input_with_fallback(user_input, conversation_history=[]):
     """
     if not user_input or not isinstance(user_input, str):
         return "Please provide a valid question about mental health services."
-    
+
     user_input = user_input.strip()
     if len(user_input) == 0:
         return "Please provide a question about mental health services."
-    
+
     if len(user_input) > 1000:
         return "Your message is quite long. Please try to be more concise for better assistance."
-    
+
     # Keep your mental health trigger validation
     try:
         validation_result = MentalHealthModel().validate_input(user_input)
@@ -174,7 +191,7 @@ def process_input_with_fallback(user_input, conversation_history=[]):
             return validation_result.response
     except Exception as e:
         print(f"Mental health validation error: {e}")
-    
+
     # Replace your RAG logic with the enhanced system
     try:
         return enhanced_rag.process_with_intelligent_fallback(

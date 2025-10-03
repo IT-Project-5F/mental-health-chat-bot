@@ -67,21 +67,18 @@ app.add_middleware(
 )
 
 @app.middleware("http")
-async def authentication_middleware(request: Request, call_next):
-    """Unified authentication middleware for user and admin endpoints"""
-
-    # Define path permissions for different user types
-    path_permissions = {
-        "/api/users/": ["admin"],
+async def admin_authentication_middleware(request: Request, call_next):
+    """Authentication middleware for admin-only endpoints"""
+    admin_only_paths = {
         "/api/database/": ["admin"],
+        "/api/users/": ["admin"]
     }
 
     required_roles = None
-    for path, roles in path_permissions.items():
+    for path, roles in admin_only_paths.items():
         if request.url.path.startswith(path):
             required_roles = roles
             break
-
     if required_roles:
         authorization = request.headers.get("Authorization")
         if not authorization:
@@ -102,9 +99,8 @@ async def authentication_middleware(request: Request, call_next):
             if scheme.lower() != "bearer":
                 return JSONResponse(
                     status_code=401,
-                    content={"detail": "Invalid authentication scheme. Expected 'Bearer'"}
+                    content={"detail": "Invalid authentication scheme"}
                 )
-
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
             # Handle password reset tokens
@@ -134,12 +130,6 @@ async def authentication_middleware(request: Request, call_next):
                     "username": payload.get("sub"),
                     "role": user_role
                 }
-
-        except jwt.ExpiredSignatureError:
-            return JSONResponse(
-                status_code=401,
-                content={"detail": "Token has expired"}
-            )
         except PyJWTError as e:
             return JSONResponse(
                 status_code=401,

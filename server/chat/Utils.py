@@ -168,3 +168,4 @@ def get_embeddings_vector(text):
     except Exception as e:
         print(f"Error getting embeddings: {e}")
         return None
+

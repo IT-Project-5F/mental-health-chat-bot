@@ -7,28 +7,28 @@ from .Schemas import UserCreate, UserResponse
 from typing import Annotated
 from users.Model import AuxillaryUser
 from .Utils import get_password_hash
-import resend 
+import resend
 from logging import getLogger
 
 logger = getLogger(__name__)
 
 router = APIRouter() 
 
-## TODO : include the roles of the user in the dict 
+
 @router.post("/login", response_model = Token) 
 async def login_for_access_token(
     form_data : Annotated[OAuth2PasswordRequestForm, Depends()], 
     db : Annotated[Session, Depends(get_database)]
 ) -> Token : 
-    user = await authenticate_user(db, form_data.username, form_data.password) 
+    user = authenticate_user(db, form_data.username, form_data.password) 
     if not user : 
         raise HTTPException(
             status_code = status.HTTP_401_UNAUTHORIZED, 
             detail = "Incorrect username or password", 
             headers = {"WWW-Authenticate" : 'Bearer'}, 
         )
-    access_token = create_access_token( 
-       data = {"aim" : "using", "sub" : user.username, "role": "user"}
+    access_token = create_access_token(
+       data = {"aim" : "using", "sub" : user.username, "role": user.role}
     )
     return Token(access_token = access_token, token_type = "bearer") 
 
@@ -38,32 +38,32 @@ async def reset_inform(
     db: Annotated[Session, Depends(get_database)]
 ):
     # Find user
-    user = await get_user(db, username)
+    user = get_user(db, username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Cannot find user",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    
+
     email_address = user.email_address
     if not email_address:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User has no registered email address",
         )
-    
+
     user_details = {
-        "aim" : "reset", 
+        "aim" : "reset",
         "username": user.username,
         "user_email": user.email_address,
     }
-    
+
     reset_token = create_access_token(
         user_details,
         password_reset=True
     )
-    
+
     # Email content with proper token inclusion
     subject = "Reset password instructions"
     reset_url = f"http://localhost:3000/reset?token={reset_token}"  # Include the actual token
@@ -80,9 +80,9 @@ async def reset_inform(
     <br>
     <p>Best regards,<br>Support Team</p>
     """
-    
+
     try:
-        await resend.Emails.send({
+        r = resend.Emails.send({
             "from": "Support <onboarding@resend.dev>",
             "to": [email_address],
             "subject": subject,
@@ -95,16 +95,16 @@ async def reset_inform(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error while sending reset email",
         )
-    
+
     # Security: Don't return the actual token or email in the response
     return {"message": "If the username exists and has an email address, a reset link has been sent"}
 
-    
-          
+
+
 @router.post("/signup", response_model=UserResponse)
 async def signup(user: UserCreate, db: Annotated[Session, Depends(get_database)]):
     # Check if user already exists
-    db_user = await get_user(db, user.username)
+    db_user = get_user(db, user.username)
     if db_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
@@ -112,7 +112,7 @@ async def signup(user: UserCreate, db: Annotated[Session, Depends(get_database)]
         )
     
     # Check if user is already in auxiliary table
-    auxillary_user = await get_auxillary_user(db, user.username)
+    auxillary_user = get_auxillary_user(db, user.username)
     if auxillary_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

@@ -1,17 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Annotated, List
 from sqlalchemy.orm import Session
+from typing import List
 from auth.Schemas import UserResponse
 from auth.Dependencies import get_current_user, get_database, get_auxillary_user, get_user
 from auth.Utils import get_password_hash
-from .Schemas import User, AuxillaryUser, UserUpdate, PasswordUpdateRequest
-from .Model import User as UserModel, AuxillaryUser as AuxillaryUserModel
-from .Utils import EmailNotificationService
+from .Schemas import User, UserUpdate, AuxillaryUser, PasswordUpdateRequest
+from .Model import User as UserModel, AuxillaryUser as AuxiliaryUserModel
+import resend
 from logging import getLogger
 from dotenv import load_dotenv
+from Utils import *
 
 load_dotenv()
+
+
 logger = getLogger(__name__)
+
 router = APIRouter()
 
 '''
@@ -39,10 +44,10 @@ async def list_pending_users(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_database),
-    current_admin : UserModel = Depends(get_current_user) 
+    current_admin : UserModel = Depends(get_current_user)
 ):
     """List pending user applications (requires authentication)"""
-    return await db.query(AuxillaryUserModel).offset(skip).limit(limit).all()
+    return await db.query(AuxiliaryUserModel).offset(skip).limit(limit).all()
 
 @router.put("/reset_password", status_code = status.HTTP_204_NO_CONTENT)
 async def update_password(
@@ -52,26 +57,26 @@ async def update_password(
     """Update current user's password securely"""
     # Verify current password
     user = await get_user(db, password_data.username)
-    if not user or user.username != password_data.username : 
-        raise HTTPException( 
-           status_code = status.HTTP_404_NOT_FOUND, 
-           detail = "User not found", 
-        ) 
+    if not user or user.username != password_data.username :
+        raise HTTPException(
+           status_code = status.HTTP_404_NOT_FOUND,
+           detail = "User not found",
+        )
     try:
         # Update password
         user.hashed_password = get_password_hash(password_data.new_password)
         db.commit()
         db.refresh(user)
-        
+
         # Send notification email
         if user.email_address:
             subject, html = EmailNotificationService.get_password_reset_email()
             if not await EmailNotificationService.send_email(user.email_address, subject, html):
                 logger.warning(f"Password updated but email notification failed for user {user.username}")
-        
+
         logger.info(f"Password updated successfully for user {user.username}")
         return None
-        
+
     except Exception as e:
         db.rollback()
         logger.error(f"Error updating password for user {user.username}: {e}")
@@ -97,25 +102,25 @@ async def update_user(
 
     try:
         update_data = user_update.dict(exclude_unset=True)
-        
+
         if "password" in update_data:
             update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
 
         # Update fields
         for key, value in update_data.items():
             setattr(user, key, value)
-        
+
         db.commit()
         db.refresh(user)
 
         # Send notification email
         if user.email_address:
-            subject, html = EmailNotificationService.get_account_update_email()    
+            subject, html = EmailNotificationService.get_account_update_email()
             if not await EmailNotificationService.send_email(user.email_address, subject, html):
                 logger.warning(f"User updated but email notification failed for user {user.username}")
         logger.info(f"User {user.username} updated successfully")
         return None
-        
+
     except Exception as e:
         db.rollback()
         logger.error(f"Error updating user {user_id}: {e}")
@@ -153,12 +158,12 @@ async def delete_user(
 
 @router.post("/accept/{username}", response_model=UserResponse)
 async def accept_user(
-    username: str, 
+    username: str,
     db: Annotated[Session, Depends(get_database)],
     current_admin: UserModel = Depends(get_current_user)  # Added authentication
 ):
     """Accept a pending user application"""
-    
+
     auxillary_db_user = await get_auxillary_user(db, username)
     if auxillary_db_user is None:
         raise HTTPException(
@@ -211,7 +216,7 @@ async def accept_user(
 
 @router.delete("/decline/{username}")
 async def decline_user(
-    username: str, 
+    username: str,
     db: Annotated[Session, Depends(get_database)],
     current_admin: UserModel = Depends(get_current_user)  # Added authentication
 ):

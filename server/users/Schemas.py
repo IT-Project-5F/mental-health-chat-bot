@@ -14,6 +14,12 @@ class UserUpdate(BaseModel):
     status: Optional[bool] = None
     location: Optional[str] = None
 
+class AdminCreate(BaseModel):
+    username: str
+    password: str
+    email_address: str
+    location: Optional[str] = "System"
+
 class User(UserBase):
     id: int
     status: bool
