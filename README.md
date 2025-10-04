@@ -37,7 +37,7 @@ Create a `.env` file in the root directory:
 ```env
 # Database Configuration
 POSTGRES_USER=mental_health_user
-POSTGRES_PASSWORD=password
+POSTGRES_PASSWORD=mental_health_password
 POSTGRES_DB=mental_health_db
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
