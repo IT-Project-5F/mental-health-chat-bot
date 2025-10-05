@@ -1,12 +1,66 @@
-import type { User } from "./Columns"
-import { userColumns } from "./Columns"
+import type { ColumnDef } from "@tanstack/react-table"
 import { DataTable } from "../../components/ui/data-table"
 import { useEffect, useState } from "react"
 import { request } from "@/api"
 
+import {
+    ArrowUpDown
+} from "lucide-react";
+
 type UserProps = {
     pageSize?: number
 }
+
+export type User = {
+    name: string
+    email: string
+    verified: "pending" | "verified"
+}
+
+export const userColumns: ColumnDef<User>[] = [
+    {
+        accessorKey: "name",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center">
+                    <span>Name</span>
+                    <ArrowUpDown
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
+                    />
+                </div>
+            )
+        },
+    },
+    {
+        accessorKey: "email",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center">
+                    <span>Email</span>
+                    <ArrowUpDown
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
+                    />
+                </div>
+            )
+        },
+    },
+    {
+        accessorKey: "verified",
+        header: ({ column }) => {
+            return (
+                <div className="flex items-center">
+                    <span>Verified</span>
+                    <ArrowUpDown
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
+                    />
+                </div>
+            )
+        },
+    }
+]
 
 function Users({ pageSize = 20 }: UserProps) {
 
@@ -15,11 +69,11 @@ function Users({ pageSize = 20 }: UserProps) {
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-            const fetchServices = async () => {
+            const fetchUsers = async () => {
                 setLoading(true)
                 setError(null)
     
-                const result = await request("GET", "/api/users")
+                const result = await request("GET", "/api/users/")
     
                 if (result.requestError) {
                     setError(result.message)
@@ -29,7 +83,7 @@ function Users({ pageSize = 20 }: UserProps) {
     
                 setLoading(false)
             }
-            fetchServices()
+            fetchUsers()
         }, [])
     
         if (loading) {

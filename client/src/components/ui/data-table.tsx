@@ -23,9 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -63,7 +61,8 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
+      {/* Client side search bar */}
+      {/* <div className="flex items-center py-4">
         <Input
           placeholder="Search all columns..."
           value={globalFilter}
@@ -72,7 +71,7 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
-      </div>
+      </div> */}
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader className="bg-[#014532]">
