@@ -68,6 +68,11 @@ app.add_middleware(
 
 @app.middleware("http")
 async def admin_authentication_middleware(request: Request, call_next):
+
+    """Skip authentication for OPTIONS requests (CORS preflight)"""
+    if request.method == "OPTIONS":
+        return await call_next(request)
+    
     """Authentication middleware for admin-only endpoints"""
     admin_only_paths = {
         "/api/database/": ["admin"],

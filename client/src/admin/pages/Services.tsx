@@ -18,12 +18,12 @@ import {
 } from "lucide-react";
 
 export type Service = {
+    service_campus_key: string
     service_name: string
     organisation_name: string
     email: string
     phone: string
     website: string
-    service_campus_key: string
 }
 
 export const getServiceData = (onEdit: (service: Service) => void): ColumnDef<Service>[] => [

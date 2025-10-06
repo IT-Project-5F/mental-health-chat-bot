@@ -12,14 +12,15 @@ type UserProps = {
 }
 
 export type User = {
-    name: string
-    email: string
-    verified: "pending" | "verified"
+    id: number
+    username: string
+    email_address: string
+    location?: string
 }
 
 export const userColumns: ColumnDef<User>[] = [
     {
-        accessorKey: "name",
+        accessorKey: "username",
         header: ({ column }) => {
             return (
                 <div className="flex items-center">
@@ -33,7 +34,7 @@ export const userColumns: ColumnDef<User>[] = [
         },
     },
     {
-        accessorKey: "email",
+        accessorKey: "email_address",
         header: ({ column }) => {
             return (
                 <div className="flex items-center">
@@ -47,11 +48,11 @@ export const userColumns: ColumnDef<User>[] = [
         },
     },
     {
-        accessorKey: "verified",
+        accessorKey: "location",
         header: ({ column }) => {
             return (
                 <div className="flex items-center">
-                    <span>Verified</span>
+                    <span>Location</span>
                     <ArrowUpDown
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                         className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
