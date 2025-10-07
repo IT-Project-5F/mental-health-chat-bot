@@ -8,6 +8,7 @@ import ChatContainer from "./chat/ChatContainer.tsx";
 //import ProtectedRoute from "./ProtectedRoute.tsx";
 import Portal from "./admin/Portal.tsx"
 import QuickClose from "./QuickClose.tsx";
+import ServiceCreationForm from "./formComponents/ServiceCreationForm.tsx";
 
 function App() {
 
@@ -26,6 +27,8 @@ function App() {
               </ProtectedRoute>
           }
         /> */}
+        {/* TEMP - SERVICE CREATION FORM */}
+        <Route path="/service-creation" element={<ServiceCreationForm />} />
         <Route
           path="/admin"
           element={
