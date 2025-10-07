@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 
-export type FullService = {
+export type Service = {
+    service_campus_key: string
     organisation_name: string
     campus_name?: string,
     service_name: string
@@ -27,11 +28,15 @@ export type FullService = {
     workforce_type?: string,
 }
 
-function ServicePage( { service, onClose }: { service: FullService, onClose?: () => void } ) {
+function ServicePage( { service, onClose }: { service: Service, onClose?: () => void } ) {
     return (
-        <div>
-            <h1>{service.service_name}</h1>
+        <div className="space-y-2 text-left">
+            <h1 className="">{service.service_name}</h1>
             {service.notes && <p>{service.notes}</p>}
+            <div>
+                <p className="">Email</p>
+                <p>{service.email}</p>
+            </div>
             <p>Organisation: {service.organisation_name}</p>
             <p>Email: {service.email}</p>
             <p>Phone: {service.phone}</p>

@@ -16,14 +16,11 @@ import {
     ArrowUpDown,
     MoreHorizontal
 } from "lucide-react";
+import type { Service } from "./ServicePage";
 
-export type Service = {
-    service_campus_key: string
-    service_name: string
-    organisation_name: string
-    email: string
-    phone: string
-    website: string
+type ServiceProps = {
+    pageSize?: number
+    onEditService: (service: Service) => void
 }
 
 export const getServiceData = (onEdit: (service: Service) => void): ColumnDef<Service>[] => [
@@ -115,7 +112,7 @@ export const getServiceData = (onEdit: (service: Service) => void): ColumnDef<Se
                         <DropdownMenuItem
                             onClick={() => onEdit(service)}
                         >
-                            Edit
+                            View
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {/* TODO: Delete Action */}
@@ -126,7 +123,7 @@ export const getServiceData = (onEdit: (service: Service) => void): ColumnDef<Se
     }
 ]
 
-function Services({ onSelectService }: { onSelectService?: (service: Service) => void }) {
+function Services({ pageSize = 10, onEditService }: ServiceProps) {
     const [data, setData] = useState<Service[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -178,9 +175,10 @@ function Services({ onSelectService }: { onSelectService?: (service: Service) =>
             {/* Results */}
             {!loading && !error && data.length > 0 && (
                 <DataTable
-                    columns={getServiceData(onSelectService!)}
+                    columns={getServiceData(onEditService)}
                     data={data}
-                    pageSize={10} />
+                    pageSize={pageSize}
+                />
             )}
         </div>
     )
