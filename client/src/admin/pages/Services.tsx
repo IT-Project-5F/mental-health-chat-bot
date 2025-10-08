@@ -16,14 +16,14 @@ import {
     ArrowUpDown,
     MoreHorizontal
 } from "lucide-react";
-import type { Service } from "./ServicePage";
+import type { ServiceFormData } from "@/formComponents/service-form"
 
 type ServiceProps = {
     pageSize?: number
-    onEditService: (service: Service) => void
+    onEditService: (service: ServiceFormData) => void
 }
 
-export const getServiceData = (onEdit: (service: Service) => void): ColumnDef<Service>[] => [
+export const getServiceData = (onEdit: (service: ServiceFormData) => void): ColumnDef<ServiceFormData>[] => [
     {
         accessorKey: "service_name",
         header: ({ column }) => {
@@ -124,7 +124,7 @@ export const getServiceData = (onEdit: (service: Service) => void): ColumnDef<Se
 ]
 
 function Services({ pageSize = 10, onEditService }: ServiceProps) {
-    const [data, setData] = useState<Service[]>([])
+    const [data, setData] = useState<ServiceFormData[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [query, setQuery] = useState("")

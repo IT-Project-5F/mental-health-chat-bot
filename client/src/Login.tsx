@@ -15,15 +15,6 @@ function Login() {
             formData.append('username', username);
             formData.append('password', password);
 
-            
-            // const response = await fetch("http://localhost:5001/api/auth/login", {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/x-www-form-urlencoded',
-            //     },
-            //     body: formData.toString(),
-            // });
-
             const result = await request("POST", "/api/auth/login", { username, password }, true, "form");
             if (result.access_token) {
                 localStorage.setItem("access_token", result.access_token);
@@ -38,7 +29,7 @@ function Login() {
             <form onSubmit={handleLogin} className="flex flex-col h-screen items-center justify-center">
                 <h1 className="p-2 sm:p-6 text-lg sm:text-3xl font-bold text-[#CBDB2F]">Login</h1>
                 <div className="flex flex-col items-start">
-                    <label htmlFor="username" className="m-2 text-[#CBDB2F] font-bold hidden sm:block">Email</label>
+                    <label htmlFor="username" className="m-2 text-[#CBDB2F] font-bold hidden sm:block">Username</label>
                     <input
                         type="text"
                         value={username}

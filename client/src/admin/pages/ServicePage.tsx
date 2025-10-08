@@ -1,53 +1,93 @@
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
+import ServiceForm from "@/formComponents/service-form"
+import type { ServiceFormData } from "@/formComponents/service-form"
+import { X } from "lucide-react"
+import { request } from "@/api"
 
-export type Service = {
-    service_campus_key: string
-    organisation_name: string
-    campus_name?: string,
-    service_name: string
-    region_name?: string,
-    email: string
-    phone: string,
-    website: string
-    notes?: string,
-    expected_wait_time?: string,
-    opening_hours_24_7?: boolean,
-    opening_hours_standard?: boolean,
-    opening_hours_extended?: boolean,
-    op_hours_extended_details?: string,
-    address?: string,
-    suburb?: string,
-    state?: "VIC" | "NSW" | "QLD" | "SA" | "WA" | "TAS" | "NT" | "ACT",
-    postcode?: string,
-    cost?: string,
-    delivery_method?: string,
-    level_of_care?: string,
-    referral_pathway?: string,
-    service_type?: string,
-    target_population?: string,
-    workforce_type?: string,
+
+interface ServicePageProps {
+    service: ServiceFormData;
+    onClose?: () => void;
 }
 
-function ServicePage( { service, onClose }: { service: Service, onClose?: () => void } ) {
+function ServicePage( { service, onClose }: ServicePageProps ) {
+    const [loading, setLoading] = useState(false);
+
+    const handleSubmit = async (formData: ServiceFormData) => {
+        try {
+            setLoading(true);
+            // Prepare the data to be submitted
+            const submissionData = {
+                organisation_name: formData.organisationName,
+                campus_name: formData.campusName,
+                service_name: formData.serviceName,
+                region_name: formData.regionName,
+                email: formData.email,
+                phone: formData.phone,
+                website: formData.website,
+
+                address: formData.address,
+                suburb: formData.suburb,
+                state: formData.state,
+                postcode: formData.postcode,
+                
+                notes: formData.notes,
+                expected_wait_time: formData.expectedWaitTime,
+                eligibility_and_description: formData.eligibilityAndDescription,
+
+                // Convert "opHours" array to boolean values for each of opHours247, opHoursStandard, opHoursExtended
+                opening_hours_24_7: formData.opHours.includes('24/7'),
+                opening_hours_standard: formData.opHours.includes('Standard Hours'),
+                opening_hours_extended: formData.opHours.includes('Extended Hours'),
+                op_hours_extended_details: formData.opHoursExtendedDetails,
+                
+                // Required multi-select fields cannot be null, and they must be joined into a single string
+                cost: formData.cost.join(", "),
+                delivery_method: formData.deliveryMethod.join(", "),
+                level_of_care: formData.levelOfCare.join(", "),
+                referral_pathway: formData.referralPathway.join(", "),
+                service_type: formData.serviceType.join(", "),
+                target_population: formData.targetPopulation.join(", "),
+                workforce_type: formData.workforceType.join(", ")
+            };
+
+            const response = await request("PUT", `/api/database/${service.service_campus_key}`, submissionData);
+            console.log('Saved new service:', response);
+        } catch (error) {
+            console.error("Error saving service: ", error);
+            alert("An error occurred while editing the service. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
-        <div className="space-y-2 text-left">
-            <h1 className="">{service.service_name}</h1>
-            {service.notes && <p>{service.notes}</p>}
-            <div>
-                <p className="">Email</p>
-                <p>{service.email}</p>
-            </div>
-            <p>Organisation: {service.organisation_name}</p>
-            <p>Email: {service.email}</p>
-            <p>Phone: {service.phone}</p>
-            <p>Website: {service.website}</p>
-            {service.address && <p>Address: {service.address},</p>}
-            {service.suburb && <p>{service.suburb},</p>}
-            {service.state && <p>State: {service.state} </p>}
-            {service.postcode && <p>{service.postcode}</p>}
-            <Button onClick={onClose}>Close</Button>
+        <div className="relative top-0 inset-0">
+            <ServiceForm
+                initialData={service}
+                mode="edit"
+                onSubmit={handleSubmit}
+            />
+            <Button
+                onClick={onClose}
+                disabled={loading}
+                className="absolute top-0 right-0 m-4 p-2 border-1 border-transparent hover:bg-transparent hover:border-white rounded-full"
+            >
+                <X className="right-4 text-white cursor-pointer"/>
+            </Button>
+            {/* <div className="flex justify-end mt-4">
+                <Button
+                    variant="outline"
+                    onClick={onClose}
+                    disabled={loading}
+                >
+                    Close
+                </Button>
+            </div> */}
         </div>
-    );
+    )
 }
+
 
 export default ServicePage;

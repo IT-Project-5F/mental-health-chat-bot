@@ -3,14 +3,15 @@ import Sidebar from "./Sidebar";
 import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
 import Users from "./pages/Users";
-import ServicePage, { type Service } from "./pages/ServicePage";
+import ServicePage from "./pages/ServicePage";
+import type { ServiceFormData } from "@/formComponents/service-form";
 import { request } from "@/api";
 
 function Portal() {
     const [selected, setSelected] = useState(0);
-    const [selectedService, setselectedService] = useState<Service | null>(null);
+    const [selectedService, setselectedService] = useState<ServiceFormData | null>(null);
 
-    const handleEditService = async (service: Service) => {
+    const handleEditService = async (service: ServiceFormData) => {
         const result = await request("GET", `/api/database/${service.service_campus_key}`);
         setselectedService(result);
     }
