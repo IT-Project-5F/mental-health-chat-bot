@@ -11,7 +11,7 @@ from database_config import engine, SessionLocal
 from langchain_openai import OpenAIEmbeddings
 import openai
 from dotenv import load_dotenv
-from path.to.enhanced_rag import EnchancedRAGWithWebSearch
+from .enhanced_rag import EnhancedRAGWithWebSearch
 from .Utils import *
 
 def process_input_with_retrieval_continuous(user_input, conversation_history=[]):
@@ -55,7 +55,7 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
             return "I'm having trouble processing your request. Please try again."
 
         # Get similar documents with full service details
-        related_docs = get_top3_similar_docs(query_embedding)
+        related_docs = get_topk_similar_docs(query_embedding)
 
         # Default assessment values for standard RAG processing
         assessment = {
@@ -145,15 +145,30 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         user_message = f"""
         User question: {delimiter}{user_input}{delimiter}
 
-        Please provide a helpful response based on the following relevant mental health services information:
+        Please provide a clear and supportive response based on the following relevant mental health services information:
 
         {services_content}
 
-        If the services don't directly match the user's needs, provide general guidance and suggest they contact services directly or look for more specific resources.
+        If the services don't directly match the user's needs, provide general guidance and suggest they contact the services directly or look for more specific resources.
+
+        Output requirements:
+        - Use plain text only (no Markdown, asterisks, or special formatting symbols).
+        - Use clear field labels to highlight key information (for example: ORGANISATION, ADDRESS, PHONE, EMAIL, WEBSITE, SERVICE TYPE, COST, HOURS).
+        - Keep the layout easy to scan and visually organized.
+        - Adjust the format so that it is comprehensive and nice to the users. 
+
+        Example format:
+        [Drummond Street Services]
+        Address: 100 Drummond St, Carlton VIC 3053
+        Phone: 03 9663 6733
+        Email: enquiries@ds.org.au
+        Website: https://ds.org.au/
+        Service Type: Primary and specialised clinical ambulatory mental health care services; specialised mental health community support services
+        Cost: Free and paid options available
+        Hours: Standard business hours
         """
 
         messages.append({"role": "user", "content": user_message})
-
         final_response = get_completion_from_messages(messages)
 
         return final_response
@@ -166,7 +181,7 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
           """
 
 
-enhanced_rag = EnchancedRAGWithWebSearch()
+enhanced_rag = EnhancedRAGWithWebSearch()
 
 
 def process_input_with_fallback(user_input, conversation_history=[]):

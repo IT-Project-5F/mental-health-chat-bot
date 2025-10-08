@@ -180,7 +180,11 @@ class EnhancedRAGWithWebSearch:
             3. Maintains a supportive, professional tone
             4. Includes resource links when appropriate
             5. Stays focused on mental health support
-
+            
+            Output requirements:
+            - Use plain text only (no Markdown, asterisks, or special formatting symbols).
+            - Use clear field labels to highlight key information (for example: ORGANISATION, ADDRESS, PHONE, EMAIL, WEBSITE, SERVICE TYPE, COST, HOURS).
+            - Keep the layout easy to scan and visually organized. 
             Response:
             """
 

@@ -15,6 +15,7 @@ class User(Base):
     nullable = False
   )
   previous_chat_context = Column(String)
+  reset_token = Column(String)
 
 
 class AuxillaryUser(Base): 

@@ -86,7 +86,7 @@ async def chat_endpoint(request: ChatRequest):
         )
         conversation_history.append(user_message.dict())
         # Process the message with RAG and conversation context
-        response = await process_input_with_retrieval_continuous(
+        response = process_input_with_retrieval_continuous(
             request.message, 
             [{"role": msg["role"], "content": msg["content"]} for msg in conversation_history[:-1]]
         )

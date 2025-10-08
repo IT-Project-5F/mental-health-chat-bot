@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 openai_client = openai.OpenAI()
 
-def get_top3_similar_docs(query_embedding, k=3):
+def get_topk_similar_docs(query_embedding, k = 5):
     """Retrieve top k most similar documents based on cosine similarity"""
     if isinstance(query_embedding, np.ndarray):
         query_embedding = query_embedding.tolist()
@@ -154,12 +154,13 @@ def get_completion_from_messages(messages, model="gpt-4o", temperature=0, max_to
             temperature=temperature, 
             max_tokens=max_tokens, 
         )
+       # print(response.choices[0].message.content)
         return response.choices[0].message.content
     except Exception as e:
         print(f"Error getting completion: {e}")
         return "I'm having trouble processing your request right now. Please try again later."
 
-def get_embeddings_vector(text): 
+def get_embeddings_vector(text):
     """Get embeddings vector for text"""
     try:
         embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")

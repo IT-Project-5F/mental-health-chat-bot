@@ -33,9 +33,4 @@ class AuxillaryUser(UserBase):
     id: int
     username: str
     email_address: Optional[str]
-    location: Optional[str]        
-    
-class PasswordUpdateRequest(BaseModel):
-    username : str 
-    email_address : str
-    new_password: str
+    location: Optional[str]

@@ -79,6 +79,7 @@ async def admin_authentication_middleware(request: Request, call_next):
         if request.url.path.startswith(path):
             required_roles = roles
             break
+
     if required_roles:
         authorization = request.headers.get("Authorization")
         if not authorization:
@@ -94,42 +95,25 @@ async def admin_authentication_middleware(request: Request, call_next):
                     status_code=401,
                     content={"detail": "Invalid authorization header format. Expected 'Bearer <token>'"}
                 )
-
             scheme, token = auth_parts
             if scheme.lower() != "bearer":
                 return JSONResponse(
                     status_code=401,
-                    content={"detail": "Invalid authentication scheme"}
+                    content={"detail": "Invalid authentication scheme. Expected 'Bearer'"}
                 )
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_role = payload.get("role")
+            if user_role not in required_roles:
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": f"Access denied. Required roles: {required_roles}"}
+                )
 
-            # Handle password reset tokens
-            if payload.get("aim") == "reset":
-                username = payload.get("username")
-                user_email = payload.get("user_email")
-                if not username or not user_email:
-                    return JSONResponse(
-                        status_code=401,
-                        content={"detail": "Invalid token payload"}
-                    )
-                request.state.user = {
-                    "aim": "reset",
-                    "username": username,
-                    "email": user_email
-                }
-            else:
-                # Handle regular authentication tokens
-                user_role = payload.get("role")
-                if user_role not in required_roles:
-                    return JSONResponse(
-                        status_code=403,
-                        content={"detail": f"Access denied. Required roles: {required_roles}"}
-                    )
-                request.state.user = {
-                    "aim": "using",
-                    "username": payload.get("sub"),
-                    "role": user_role
-                }
+            request.state.user = {
+                "username": payload.get("sub"),
+                "role": user_role
+            }
+
         except PyJWTError as e:
             return JSONResponse(
                 status_code=401,
