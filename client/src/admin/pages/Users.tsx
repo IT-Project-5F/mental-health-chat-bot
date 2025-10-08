@@ -104,7 +104,7 @@ function Users({ pageSize = 20 }: UserProps) {
         if (!confirmDecline) return;
 
         try {
-            const result = await request("POST", `/api/users/decline/${username}`)
+            const result = await request("DELETE", `/api/users/decline/${username}`)
             console.log('Declined user:', result);
             // Remove user from pending list
             setPendingUsers(prev => prev.filter(user => user.username !== username))
@@ -115,6 +115,24 @@ function Users({ pageSize = 20 }: UserProps) {
         }
     }
 
+    const handleDeleteUser = async (username: string) => {
+        // Confirm before deleting user
+        const confirmDecline = window.confirm(`Are you sure you want to delete the user "${username}"? This action cannot be undone.`);
+        if (!confirmDecline) return;
+
+        try {
+            const result = await request("DELETE", `/api/users/${username}`)
+            console.log('Deleted user:', result);
+            // Remove user from list
+            setUsers(prev => prev.filter(user => user.username !== username))
+            
+        } catch (error) {
+            console.error("Error deleting user: ", error)
+            alert("An error occurred while deleting the user. Please try again.")
+        }
+    }
+
+    // Define table columns for all users
     const userData: ColumnDef<User>[] = [
         {
             accessorKey: "username",
@@ -160,7 +178,37 @@ function Users({ pageSize = 20 }: UserProps) {
         }
     ]
 
-    // Define table columns. Allow accepting and declining pending users
+    // Define table columns for verified users. Allow deleting users
+    const getVerifiedUsers = (handleDeleteUser: (username: string) => void): ColumnDef<User>[] => [
+        ...userData,
+        {
+            id: "actions",
+            cell: ({ row }) => {
+                const user = row.original
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel><h1>Actions</h1></DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => { handleDeleteUser(user.username) }}
+                            >
+                                Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )
+            }
+        }
+    ]
+
+    // Define table columns for pending users. Allow accepting and declining pending users
     const getPendingUsers = (handleAcceptUser: (username: string) => void, handleDeclineUser: (username: string) => void): ColumnDef<User>[] => [
         ...userData,
         {
@@ -189,7 +237,6 @@ function Users({ pageSize = 20 }: UserProps) {
                             >
                                 Reject
                             </DropdownMenuItem>
-                            {/* TODO: Delete Action */}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )
@@ -216,7 +263,7 @@ function Users({ pageSize = 20 }: UserProps) {
                 ) : error ? (
                     <div className="text-red-500">Error: {error}</div>
                 ) : (
-                    <DataTable columns={userData} data={users} pageSize={pageSize} />
+                    <DataTable columns={getVerifiedUsers(handleDeleteUser)} data={users} pageSize={pageSize} />
                 )}
             </div>
         </div>
