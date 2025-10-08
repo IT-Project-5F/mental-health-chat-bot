@@ -23,7 +23,7 @@ function Portal() {
     ];
 
     return (
-        <div className="grid absolute w-screen h-screen inset-0 grid-cols-[360px_1fr]">
+        <div className="grid absolute w-screen h-screen inset-0 grid-cols-[120px_1fr] sm:grid-cols-[360px_1fr] bg-gradient-to-b from-[#FFDBE4] to-[#E4F0E0]">
             <Sidebar selected={selected} setSelected={setSelected}/>
             <div className="flex-1 p-6">
                 {selectedService
