@@ -45,10 +45,7 @@ function ServicePage( { service, onClose }: ServicePageProps ) {
         referralPathway: s.referral_pathway ? s.referral_pathway.split(", ").filter((item: string) => item) : [],
         serviceType: s.service_type ? s.service_type.split(", ").filter((item: string) => item) : [],
         targetPopulation: s.target_population ? s.target_population.split(", ").filter((item: string) => item) : [],
-        workforceType: s.workforce_type ? s.workforce_type.split(", ").filter((item: string) => item) : [],
-
-        // Hidden fields
-        service_campus_key: s.service_campus_key || ""
+        workforceType: s.workforce_type ? s.workforce_type.split(", ").filter((item: string) => item) : []
     })
     
     const handleSubmit = async (formData: ServiceFormData) => {
