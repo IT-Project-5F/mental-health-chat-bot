@@ -37,9 +37,9 @@ jobs:
 
       - name: Deploy services
         run: |
-          docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml down || true
-          docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache --pull
-          docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml up -d --force-recreate traefik client server
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml down || true
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache --pull
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml up -d --force-recreate traefik client server
 
       - name: Verify deployment
-        run: docker compose --project-name "$COMPOSE_PROJECT_NAME" ps
+        run: docker-compose -p "$COMPOSE_PROJECT_NAME" ps
