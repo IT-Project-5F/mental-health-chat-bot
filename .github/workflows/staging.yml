@@ -35,11 +35,25 @@ jobs:
           docker network create proxy 2>/dev/null || true
           docker network create traefik-public 2>/dev/null || true
 
-      - name: Deploy services
+      - name: Stop existing services
+        run: docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml down || true
+
+      - name: Clean up Docker
         run: |
-          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml down || true
-          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache --pull
-          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml up -d --force-recreate traefik client server
+          docker system prune -af --volumes || true
+
+      - name: Build services sequentially
+        run: |
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build postgres
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build db-init
+          docker image prune -f
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build server
+          docker image prune -f
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build client
+          docker image prune -f
+
+      - name: Start services
+        run: docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml up -d
 
       - name: Verify deployment
         run: docker-compose -p "$COMPOSE_PROJECT_NAME" ps
