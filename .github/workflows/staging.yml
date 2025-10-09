@@ -1,0 +1,74 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      ENVIRONMENT: staging
+      NODE_ENV: staging
+      DOMAIN: ${{ secrets.DOMAIN_STAGING }}
+      DOCKER_IMAGE: ${{ secrets.DOCKER_IMAGE_STAGING }}
+      COMPOSE_PROJECT_NAME: ${{ secrets.DOCKER_IMAGE_STAGING }}
+      ACME_EMAIL: ${{ secrets.ACME_EMAIL }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: ENVIRONMENT,DOMAIN,DOCKER_IMAGE,COMPOSE_PROJECT_NAME,ACME_EMAIL,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_HOST,POSTGRES_PORT,DATABASE_URL,SECRET_KEY,OPENAI_API_KEY,RESEND_API_KEY
+          script: |
+            cd /home/ec2-user/mental-health-chat-bot
+            git pull origin main
+
+            # Create required networks if they don't exist
+            docker network create proxy 2>/dev/null || true
+            docker network create traefik-public 2>/dev/null || true
+
+            # Export environment variables
+            export ENVIRONMENT=$ENVIRONMENT
+            export DOMAIN=$DOMAIN
+            export DOCKER_IMAGE=$DOCKER_IMAGE
+            export COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME
+            export ACME_EMAIL=$ACME_EMAIL
+            export POSTGRES_DB=$POSTGRES_DB
+            export POSTGRES_USER=$POSTGRES_USER
+            export POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+            export POSTGRES_HOST=$POSTGRES_HOST
+            export POSTGRES_PORT=$POSTGRES_PORT
+            export DATABASE_URL=$DATABASE_URL
+            export SECRET_KEY=$SECRET_KEY
+            export OPENAI_API_KEY=$OPENAI_API_KEY
+            export RESEND_API_KEY=$RESEND_API_KEY
+
+            # Stop and remove existing containers
+            docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml down || true
+
+            # Build with no cache and force rebuild
+            docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache --pull
+
+            # Start services
+            docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml up -d --force-recreate traefik client server
+
+            # Verify deployment
+            docker compose --project-name "$COMPOSE_PROJECT_NAME" ps
