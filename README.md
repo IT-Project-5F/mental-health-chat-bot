@@ -13,8 +13,8 @@ An intelligent RAG (Retrieval-Augmented Generation) chatbot system for mental he
 
 ## 🌐 URLs & Endpoints
 
-- **Frontend**: http://localhost:5174 (dev) / http://localhost:3000 (prod)
-- **Backend API**: http://localhost:5001
+- **Frontend**: http://localhost:5174 (dev) / mch-staging.mooo.com (stag) / mch-prod.mooo.com (prod)
+- **Backend API**: http://localhost:5001 (dev) / api.mch-staging.mooo.com (stag) / api.mch-prod.mooo.com (prod)
 - **API Documentation**: http://localhost:5001/docs
 - **Health Check**: http://localhost:5001/health
 - **Chat Endpoints**:

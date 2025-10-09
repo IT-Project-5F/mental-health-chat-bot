@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - --api.insecure=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL:-admin@example.com}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=http
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certificates:/letsencrypt
+    networks:
+      - traefik-public
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
+
   postgres:
     image: pgvector/pgvector:pg16
     container_name: mental_health_postgres
@@ -12,7 +37,6 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
       - ./server/init-db/01-enable-pgvector.sql:/docker-entrypoint-initdb.d/01-enable-pgvector.sql
       - ./server/init-db/03-create-normalized-tables.sql:/docker-entrypoint-initdb.d/03-create-normalized-tables.sql
     healthcheck:
@@ -42,44 +66,82 @@ services:
     restart: "no"
 
   client:
+    image: '${DOCKER_IMAGE?Variable not set}-client:${TAG-latest}'
+    container_name: '${DOCKER_IMAGE?Variable not set}-client'
     build:
       context: ./client
       dockerfile: Dockerfile
-    ports:
-      - "3000:80"
+      args:
+        VITE_API_URL: https://api.${DOMAIN?Variable not set}
     depends_on:
       - server
+    environment:
+      - DOMAIN
     networks:
+      - traefik-public
       - app-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.constraint-label=traefik-public
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-client-http.rule=Host(`${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-client-http.entrypoints=http
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-client-https.rule=Host(`${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-client-https.entrypoints=https
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-client-https.tls=true
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-client-https.tls.certresolver=le
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-client-http.middlewares=https-redirect
+      - traefik.http.services.${DOCKER_IMAGE?Variable not set}-client.loadbalancer.server.port=80
 
   server:
+    image: '${DOCKER_IMAGE?Variable not set}-server:${TAG-latest}'
+    container_name: '${DOCKER_IMAGE?Variable not set}-server'
     build:
       context: ./server
       dockerfile: Dockerfile
-    ports:
-      - "5001:5001"
-    environment:
-      - HOST=0.0.0.0
-      - PORT=5001
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - SECRET_KEY=${SECRET_KEY}
     depends_on:
       postgres:
         condition: service_healthy
       db-init:
         condition: service_completed_successfully
+    environment:
+      - HOST=0.0.0.0
+      - PORT=5001
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - FRONTEND_URL=https://${DOMAIN?Variable not set}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY}
     networks:
+      - traefik-public
       - app-network
     volumes:
       - ./server:/app
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.constraint-label=traefik-public
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-api-http.rule=Host(`api.${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-api-http.entrypoints=http
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-api-https.rule=Host(`api.${DOMAIN?Variable not set}`)
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-api-https.entrypoints=https
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-api-https.tls=true
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-api-https.tls.certresolver=le
+      - traefik.http.routers.${DOCKER_IMAGE?Variable not set}-api-http.middlewares=https-redirect
+      - traefik.http.services.${DOCKER_IMAGE?Variable not set}-api.loadbalancer.server.port=5001
 
 volumes:
   postgres_data:
+  traefik-certificates:
 
 networks:
   app-network:
     driver: bridge
+  traefik-public:
+    external: true

@@ -1,4 +1,5 @@
 import uvicorn
+import os
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -57,10 +58,20 @@ app.include_router(users_router, prefix='/api/users', tags=["users"])
 app.include_router(chat_router, prefix='/api/chat', tags=["chat"])
 app.include_router(database_router, prefix='/api/database', tags=["database"])
 
-# Configure CORS
+# Configure CORS - dynamic based on environment
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "")
+
+if ENVIRONMENT == "production" or ENVIRONMENT == "staging":
+    # In production/staging, allow your frontend URL
+    allowed_origins = [FRONTEND_URL] if FRONTEND_URL else []
+else:
+    # In development, allow localhost URLs
+    allowed_origins = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
