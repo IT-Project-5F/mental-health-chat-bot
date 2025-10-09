@@ -9,17 +9,10 @@ RUN apt-get update && \
     build-essential \
     gcc \
     g++ \
-    libc6-dev \
-    libstdc++-10-dev \
     curl \
     git \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Rust (needed for fastuuid)
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
-ENV PATH="/root/.cargo/bin:${PATH}"
-RUN rustc --version
 
 # Upgrade pip
 RUN pip install --upgrade pip
