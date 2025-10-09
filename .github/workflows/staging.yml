@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, staging]
 
     env:
       ENVIRONMENT: staging
@@ -30,48 +30,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup SSH key
+      - name: Create Docker networks
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > ~/.ssh/deploy_key.pem
-          chmod 600 ~/.ssh/deploy_key.pem
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          docker network create proxy 2>/dev/null || true
+          docker network create traefik-public 2>/dev/null || true
 
-      - name: Deploy to EC2 via SSH
+      - name: Deploy services
         run: |
-          ssh -i ~/.ssh/deploy_key.pem ec2-user@${{ secrets.EC2_HOST }} << 'ENDSSH'
-            cd /home/ec2-user/mental-health-chat-bot
-            git pull origin main
+          docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml down || true
+          docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache --pull
+          docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml up -d --force-recreate traefik client server
 
-            # Create required networks if they don't exist
-            docker network create proxy 2>/dev/null || true
-            docker network create traefik-public 2>/dev/null || true
-
-            # Export environment variables
-            export ENVIRONMENT="${{ env.ENVIRONMENT }}"
-            export DOMAIN="${{ env.DOMAIN }}"
-            export DOCKER_IMAGE="${{ env.DOCKER_IMAGE }}"
-            export COMPOSE_PROJECT_NAME="${{ env.COMPOSE_PROJECT_NAME }}"
-            export ACME_EMAIL="${{ env.ACME_EMAIL }}"
-            export POSTGRES_DB="${{ env.POSTGRES_DB }}"
-            export POSTGRES_USER="${{ env.POSTGRES_USER }}"
-            export POSTGRES_PASSWORD="${{ env.POSTGRES_PASSWORD }}"
-            export POSTGRES_HOST="${{ env.POSTGRES_HOST }}"
-            export POSTGRES_PORT="${{ env.POSTGRES_PORT }}"
-            export DATABASE_URL="${{ env.DATABASE_URL }}"
-            export SECRET_KEY="${{ env.SECRET_KEY }}"
-            export OPENAI_API_KEY="${{ env.OPENAI_API_KEY }}"
-            export RESEND_API_KEY="${{ env.RESEND_API_KEY }}"
-
-            # Stop and remove existing containers
-            docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml down || true
-
-            # Build with no cache and force rebuild
-            docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache --pull
-
-            # Start services
-            docker compose --project-name "$COMPOSE_PROJECT_NAME" -f docker-compose.yml up -d --force-recreate traefik client server
-
-            # Verify deployment
-            docker compose --project-name "$COMPOSE_PROJECT_NAME" ps
-          ENDSSH
+      - name: Verify deployment
+        run: docker compose --project-name "$COMPOSE_PROJECT_NAME" ps
