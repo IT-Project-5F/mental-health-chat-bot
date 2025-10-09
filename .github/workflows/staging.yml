@@ -35,7 +35,8 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: |
+            ${{ secrets.EC2_SSH_KEY }}
           envs: ENVIRONMENT,DOMAIN,DOCKER_IMAGE,COMPOSE_PROJECT_NAME,ACME_EMAIL,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_HOST,POSTGRES_PORT,DATABASE_URL,SECRET_KEY,OPENAI_API_KEY,RESEND_API_KEY
           script: |
             cd /home/ec2-user/mental-health-chat-bot
