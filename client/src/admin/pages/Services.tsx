@@ -74,15 +74,19 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
             accessorKey: "service_name",
             header: ({ column }) => {
                 return (
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-2">
                         <span>Service</span>
-                        <ArrowUpDown
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
                             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                            className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                        />
+                        >
+                            <ArrowUpDown />
+                        </Button>
                     </div>
                 )
-            }
+            },
         },
         {
             accessorKey: "organisation_name",
@@ -90,13 +94,17 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
                 return (
                     <div className="flex items-center">
                         <span>Org Name</span>
-                        <ArrowUpDown
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
                             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                            className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                        />
+                        >
+                            <ArrowUpDown />
+                        </Button>
                     </div>
                 )
-            }
+            },
         },
         {
             accessorKey: "email",
@@ -104,10 +112,14 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
                 return (
                     <div className="flex items-center">
                         <span>Email</span>
-                        <ArrowUpDown
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
                             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                            className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                        />
+                        >
+                            <ArrowUpDown />
+                        </Button>
                     </div>
                 )
             },
@@ -118,10 +130,14 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
                 return (
                     <div className="flex items-center">
                         <span>Phone</span>
-                        <ArrowUpDown
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
                             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                            className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                        />
+                        >
+                            <ArrowUpDown />
+                        </Button>
                     </div>
                 )
             },
@@ -132,10 +148,14 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
                 return (
                     <div className="flex items-center">
                         <span>Website</span>
-                        <ArrowUpDown
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
                             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                            className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                        />
+                        >
+                            <ArrowUpDown />
+                        </Button>
                     </div>
                 )
             },
@@ -147,20 +167,21 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghostdark" size={"icon"}>
                                 <span className="sr-only">Open menu</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel><h1>Actions</h1></DropdownMenuLabel>
+                        <DropdownMenuContent align="end" className="rounded-md">
+                            <DropdownMenuLabel>
+                                <h1 className="font-semibold">Actions</h1>
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => onEdit(service)}
                             >
                                 View
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 onClick={() => {handleDeleteService(service.service_name, service.service_campus_key)}}
                             >
@@ -169,7 +190,7 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
                         </DropdownMenuContent>
                     </DropdownMenu>
                 )
-            }
+            },
         }
     ]
 
@@ -184,8 +205,8 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
                     onChange={(e) => setQuery(e.target.value)}
                 />
                 <Button
+                    variant="secondary"
                     type="submit"
-                    className="bg-[#014532] hover:bg-[#62BB46]"
                 >
                     Search
                 </Button>

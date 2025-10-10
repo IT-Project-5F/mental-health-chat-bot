@@ -140,10 +140,14 @@ function Users({ pageSize = 20 }: UserProps) {
                 return (
                     <div className="flex items-center">
                         <span>Name</span>
-                        <ArrowUpDown
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
                             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                            className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                        />
+                        >
+                            <ArrowUpDown />
+                        </Button>
                     </div>
                 )
             },
@@ -154,10 +158,14 @@ function Users({ pageSize = 20 }: UserProps) {
                 return (
                     <div className="flex items-center">
                         <span>Email</span>
-                        <ArrowUpDown
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
                             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                            className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                        />
+                        >
+                            <ArrowUpDown />
+                        </Button>
                     </div>
                 )
             },
@@ -168,10 +176,14 @@ function Users({ pageSize = 20 }: UserProps) {
                 return (
                     <div className="flex items-center">
                         <span>Location</span>
-                        <ArrowUpDown
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
                             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                            className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                        />
+                        >
+                            <ArrowUpDown />
+                        </Button>
                     </div>
                 )
             },
@@ -188,7 +200,7 @@ function Users({ pageSize = 20 }: UserProps) {
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghostdark" size={"icon"}>
                                 <span className="sr-only">Open menu</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
@@ -218,7 +230,7 @@ function Users({ pageSize = 20 }: UserProps) {
                 return (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
+                            <Button variant="ghostdark" size={"icon"}>
                                 <span className="sr-only">Open menu</span>
                                 <MoreHorizontal className="h-4 w-4" />
                             </Button>
