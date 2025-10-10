@@ -17,7 +17,7 @@ function Portal() {
     }
 
     const pages = [
-        <Dashboard />,
+        <Dashboard onNavigate={setSelected}/>,
         <Services onEditService={handleEditService}/>,
         <Users />
     ];
