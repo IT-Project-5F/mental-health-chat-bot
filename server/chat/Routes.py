@@ -54,7 +54,6 @@ async def chat_endpoint(request: ChatRequest):
     """
     Process user chat message using RAG system with conversation history
     """
-    print(request)
     try:
         # Create new session if none provided
         if not request.session_id:

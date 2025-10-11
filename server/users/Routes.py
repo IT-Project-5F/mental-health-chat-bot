@@ -14,38 +14,41 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 logger = getLogger(__name__)
 
 router = APIRouter()
 
-@router.get("/me", response_model = User)
+
+@router.get("/me", response_model=User)
 def read_users_me(current_user: UserModel = Depends(get_current_user)):
     return current_user
 
+
 @router.get("/", response_model=List[User])
 def list_users(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_database),
+        skip: int = 0,
+        limit: int = 100,
+        db: Session = Depends(get_database),
 ):
     users = db.query(UserModel).offset(skip).limit(limit).all()
     return users
 
-@router.get("/pending", response_model = List[User])
+
+@router.get("/pending", response_model=List[User])
 def list_pending_users(
-  skip : int = 0, 
-  limit : int = 0, 
-  db : Session = Depends(get_database)
-): 
-  return db.query(AuxillaryUser).offset(skip).limit(limit).all()
+        skip: int = 0,
+        limit: int = 0,
+        db: Session = Depends(get_database)
+):
+    return db.query(AuxillaryUser).offset(skip).limit(limit).all()
+
 
 @router.put("/{user_id}", response_model=User)
 def update_user(
-    user_id: int,
-    user_update: UserUpdate,
-    db: Session = Depends(get_database),
-    current_user: UserModel = Depends(get_current_user)
+        user_id: int,
+        user_update: UserUpdate,
+        db: Session = Depends(get_database),
+        current_user: UserModel = Depends(get_current_user)
 ):
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
@@ -53,24 +56,25 @@ def update_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
+
     update_data = user_update.dict(exclude_unset=True)
-    
+
     if "password" in update_data:
         update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
-    
+
     for key, value in update_data.items():
         setattr(user, key, value)
-    
+
     db.commit()
     db.refresh(user)
     return user
 
+
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
-    user_id: int,
-    db: Session = Depends(get_database),
-    current_user: UserModel = Depends(get_current_user)
+        user_id: int,
+        db: Session = Depends(get_database),
+        current_user: UserModel = Depends(get_current_user)
 ):
     user = db.query(UserModel).filter(UserModel.id == user_id).first()
     if not user:
@@ -78,20 +82,21 @@ def delete_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
-    
+
     db.delete(user)
     db.commit()
     return None
 
+
 @router.post("/accept", response_model=UserResponse)
-async def accept_user(username : str, db: Annotated[Session, Depends(get_database)]):
+async def accept_user(username: str, db: Annotated[Session, Depends(get_database)]):
     auxillary_db_user = get_auxillary_user(db, username)
     if auxillary_db_user is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Pending user not found"
         )
-    
+
     # Check if user already exists in main table
     existing_user = get_user(db, username)
     if existing_user:
@@ -99,7 +104,7 @@ async def accept_user(username : str, db: Annotated[Session, Depends(get_databas
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User already exists in main system"
         )
-    
+
     # Create the main user
     db_user = UserModel(
         username=auxillary_db_user.username,
@@ -107,19 +112,19 @@ async def accept_user(username : str, db: Annotated[Session, Depends(get_databas
         email_address=auxillary_db_user.email_address,
         location=auxillary_db_user.location
     )
-    
+
     email_address = auxillary_db_user.email_address
-    
+
     try:
         # Add user to main table
         db.add(db_user)
         db.commit()
         db.refresh(db_user)
-        
+
         # Remove from auxiliary table
         db.delete(auxillary_db_user)
         db.commit()
-        
+
         # Send acceptance email if email address is provided
         if email_address:
             try:
@@ -138,10 +143,11 @@ async def accept_user(username : str, db: Annotated[Session, Depends(get_databas
             except Exception as email_error:
                 db.rollback()
                 logger.error(f"Failed to send welcome email to {email_address}: {email_error}")
-                raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Error while sending accepted emails")
-        
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                    detail="Error while sending accepted emails")
+
         return db_user
-        
+
     except Exception as e:
         db.rollback()
         logger.error(f"Error accepting user {username}: {e}")
@@ -149,6 +155,7 @@ async def accept_user(username : str, db: Annotated[Session, Depends(get_databas
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error processing user acceptance"
         )
+
 
 @router.delete("/decline/{username}")
 async def decline_user(username: str, db: Annotated[Session, Depends(get_database)]):
@@ -158,13 +165,13 @@ async def decline_user(username: str, db: Annotated[Session, Depends(get_databas
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Pending user not found"
         )
-    
+
     email_address = auxillary_db_user.email_address
-    
+
     try:
         db.delete(auxillary_db_user)
         db.commit()
-        
+
         # Send rejection email if email address is provided
         if email_address:
             try:
@@ -183,8 +190,9 @@ async def decline_user(username: str, db: Annotated[Session, Depends(get_databas
             except Exception as email_error:
                 db.rollback()
                 logger.error(f"Failed to send rejection email to {email_address}: {email_error}")
-                raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = "Error while sending accepted emails")
-        
+                raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                    detail="Error while sending accepted emails")
+
         return {"message": "User application declined successfully"}
 
     except Exception as e:
@@ -195,11 +203,12 @@ async def decline_user(username: str, db: Annotated[Session, Depends(get_databas
             detail="Error processing user decline"
         )
 
+
 @router.post("/create-admin", response_model=User)
 def create_admin_user(
-    admin_data: AdminCreate,
-    db: Session = Depends(get_database),
-    current_user: UserModel = Depends(get_current_user)
+        admin_data: AdminCreate,
+        db: Session = Depends(get_database),
+        current_user: UserModel = Depends(get_current_user)
 ):
     """
     Create a new admin user. Only existing admin users can create new admin users.
