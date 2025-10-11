@@ -89,24 +89,6 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
             },
         },
         {
-            accessorKey: "organisation_name",
-            header: ({ column }) => {
-                return (
-                    <div className="flex items-center">
-                        <span>Org Name</span>
-                        <Button
-                            variant={"ghost"}
-                            size={"icon"}
-                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
-                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        >
-                            <ArrowUpDown />
-                        </Button>
-                    </div>
-                )
-            },
-        },
-        {
             accessorKey: "email",
             header: ({ column }) => {
                 return (

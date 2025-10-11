@@ -110,7 +110,9 @@ function ServicePage( { service, onClose }: ServicePageProps ) {
             <Button
                 onClick={onClose}
                 disabled={loading}
-                className="absolute top-0 right-0 m-4 p-2 border-1 border-transparent hover:bg-transparent hover:border-white rounded-full"
+                variant={"ghost"}
+                size={"icon"}
+                className="absolute top-0 right-0 m-4 p-2"
             >
                 <X className="right-4 text-white cursor-pointer"/>
             </Button>

@@ -19,7 +19,7 @@ export const request = async(
 ) => {
 
     // Retrieve the token from local storage if it exists
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
 
     // Initialize headers and body for the fetch call
     let headers: Record<string, string> = {};
