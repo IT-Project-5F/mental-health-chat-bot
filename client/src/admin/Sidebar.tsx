@@ -1,15 +1,19 @@
 import AccountToggle from "./AccountToggle";
+import SidebarRoute from "./SidebarRoute";
 
-function Sidebar() {
+type SidebarProps = {
+    selected: number;
+    setSelected: (index: number) => void;
+}
+
+function Sidebar({selected, setSelected}: SidebarProps) {
     return (
-        <div>
-            
-            <div className="overflow-y-scroll sticky top-0 h-screen bg-[#014532]">
-                {/* TODO: Sidebar options */}
-                <AccountToggle/>
+        <div className="flex justify-between">
+            <div className="p-4 overflow-y-scroll sticky h-screen bg-[#014532] rounded-r-2xl">
+                <AccountToggle username="johnthebest" role="admin" email="very_very_long_email_of_john_doe@gmail.com"/>
+                <hr />
+                <SidebarRoute selected={selected} setSelected={setSelected}/>
             </div>
-
-            {/* TODO: Plan toggle */}
         </div>
     )
 };

@@ -10,24 +10,48 @@ const BaseApiURL = import.meta.env.VITE_API_URL || "http://localhost:5001";
  *  - path: The specific API endpoint path
  *  - data: Optional object containing data to be sent with the HTTP request. Default is null.
  */
-export const request = async(method: string, path: string, data: object | null = null, parseAsJson: boolean = true) => {
-    // Create an options object for the fetch call to allow configuration of request
-    // Admin and Healthcare Professionals will have a user-token
-    const options: RequestInit = {
-        method: method,
-        headers: {}
-    };
+export const request = async(
+    method: string,
+    path: string,
+    data: object | null = null,
+    parseAsJson: boolean = true,
+    contentType: "json" | "form" = "json" // default to JSON
+) => {
 
-    // Check and handle data that has been passed with the HTTP request
-    if (data) {
-        options.headers = {
-            'Content-Type': 'application/json'
-        };
-        options.body = JSON.stringify(data);
+    // Retrieve the token from local storage if it exists
+    const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
+
+    // Initialize headers and body for the fetch call
+    let headers: Record<string, string> = {};
+    let body: string | undefined;
+
+    // Set headers and body based on content type
+    if (contentType === "form" && data) {
+        headers["Content-Type"] = "application/x-www-form-urlencoded";
+        const formData = new URLSearchParams();
+        for (const [key, value] of Object.entries(data)) {
+            formData.append(key, String(value));
+        }
+        body = formData.toString();
+    } else if (contentType === "json") {
+        headers["Content-Type"] = "application/json";
+        body = data ? JSON.stringify(data) : undefined;
     }
+
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    // Create an options object for the fetch call to allow configuration of request
+    const options: RequestInit = {
+        method,
+        headers,
+        body,
+    };
 
     // Making requests to backend API and handling of responses
     try {
+        console.log(options);
         const response = await fetch(BaseApiURL + path, options);
         
         // Case: Encountered API error when waiting for response

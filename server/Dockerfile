@@ -9,6 +9,8 @@ RUN apt-get update && \
     build-essential \
     gcc \
     g++ \
+    libc6-dev \
+    libstdc++-10-dev \
     curl \
     git \
     libssl-dev \
