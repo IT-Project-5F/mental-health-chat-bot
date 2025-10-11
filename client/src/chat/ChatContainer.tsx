@@ -3,7 +3,9 @@ import ChatInput from './ChatInput';
 import SendBubble from './SenderBubble';
 import ResponseBubble from './ResponseBubble';
 import TypingAnimation from './TypingAnimation';
+import SuggestedActionButton from './SuggestedActionButton.tsx';
 import SuggestedQueryButton from './SuggestedQueryButton.tsx';
+import AddServiceFormModal from './modalWindows/AddServiceFormModal.tsx';
 import { request } from '../api.ts';
 
 /* Types and Interfaces */
@@ -12,6 +14,8 @@ interface Message {
   text: string;
   sender: 'user' | 'chatbot'
 }
+
+type ModalType = "addService" | "updateLocation" | null;
 
 /**
  * Functionalities:
@@ -23,15 +27,9 @@ interface Message {
  */
 const ChatContainer: React.FC = () => {    
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: 'Hello 👋, how can I help you today?', sender: 'chatbot' },
+    { id: 1, text: 'Hello 👋, how can I help you today?\nType your query below or select a suggested action button to get started!', sender: 'chatbot' },
   ])
   const [sessionID, setSessionID] = useState<string | null>(null);
-
-  // Suggested Queries
-  const suggestedQueries = [
-    "Find health services and clinics near me",
-    "Add a new service",
-  ];
 
 
   /* State */
@@ -41,12 +39,24 @@ const ChatContainer: React.FC = () => {
   const [containerWidth, setContainerWidth] = useState(window.innerWidth * 0.45); // Default Width of Chat Container (Desktop)
   const [containerHeight, setContainerHeight] = useState(window.innerHeight * 0.5); // Default Height of Chat Container (Mobile)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  // States relating to suggested buttons and modal windows
+  const [firstChatbotMessage, setFirstChatbotMessage] = useState(true);
   const [delayShowingSuggestions, setDelayShowingSuggestions] = useState(false); // For delaying when suggested query options are shown
+  const [displayedQueries, setDisplayedQueries] = useState<typeof suggestedQueries>([]); // For random selection of suggested query buttons
   const [showScrollToBottomArrow, setShowScrollToBottomArrow] = useState(false); // Indicates when 'Scroll to Bottom' arrow is displayed in container
+  const [activeModal, setActiveModal] = useState<ModalType>() // To display pop-up windows
+
+  // Check if user has access-token (for conditional rendering of certain suggested action buttons)
+  const [hasAccessToken, setHasAccessToken] = useState(false);
+  useEffect(() => {
+    const userToken = localStorage.getItem("access_token");
+    setHasAccessToken(Boolean(userToken));
+  }, []);
 
   /* Derived values for UI conditional rendering */
   const lastMessageFromChatbot = messages.length > 0 && messages[messages.length - 1].sender === 'chatbot';
-  const showSuggestedQueries = !typing && lastMessageFromChatbot && suggestedQueries.length > 0 && delayShowingSuggestions;
+  const showSuggestedQueries = !typing && lastMessageFromChatbot && delayShowingSuggestions;
+
 
   /* Refs */
   const messageEndRef = useRef<HTMLDivElement | null>(null); // End Position of Latest Message
@@ -117,12 +127,21 @@ const ChatContainer: React.FC = () => {
   }, []);
 
 
-  // Delay showing of suggested queries after the chatbot has sent a response
+  // Handling rendering of suggested queries - Random suggestions and delay of rendering after response
   useEffect(() => {
     if (!typing && lastMessageFromChatbot) {
       const timeout = setTimeout(() => {
+        // Display 3 suggested queries for a new chat session
+        if (firstChatbotMessage) {
+          setDisplayedQueries(suggestedQueries.slice(0, 3));
+          setFirstChatbotMessage(false);
+        } else {
+          // Choose 2 random suggested queries to be displayed once a chatbot response has been received
+          const shuffled = [...suggestedQueries].sort(() => Math.random() - 0.5);
+          setDisplayedQueries(shuffled.slice(0, 2));
+        }
         setDelayShowingSuggestions(true);
-        }, 800);
+      }, 800);
       return () => clearTimeout(timeout);
     } else {
       setDelayShowingSuggestions(false);
@@ -249,6 +268,22 @@ const ChatContainer: React.FC = () => {
     };
   };
 
+  /********************************************************************************/
+  /* Suggested Query and Suggested Action Buttons */
+  const suggestedQueries = [
+    { text: "Find health services and clinics with short wait times" },
+    { text: "What online health services are available?" },
+    { text: "See services available after hours or on weekends" },
+    { text: "Find services that don't require a GP referral" },
+    { text: "Explore free or low-cost health services" },
+  ];
+  const suggestedActions = [
+    { text: "Add a new service", 
+      icon:<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>, 
+      onAction: () => setActiveModal("addService"),
+      requiresUserToken: false, // FOR TESTING, CHANGE TO TRUE
+    },
+  ];
   
   /********************************************************************************/
   /* Rendering: Case - Chat Container is closed */
@@ -279,6 +314,13 @@ const ChatContainer: React.FC = () => {
 
   /* Rendering: Case - Chat Container is open */
   return (
+    <>
+    {/* Modal Windows - Rendered when Suggested Action Buttons are Clicked */}
+    {activeModal === "addService" && (
+      <AddServiceFormModal
+        onClose={() => setActiveModal(null)} />
+    )}
+
     <div 
       style={isMobile ? { height: containerHeight } : { width: containerWidth }}
       className={`fixed ${isMobile ? 'bottom-0 left-0 w-full rounded-t-lg' : 'right-0 top-0 h-full'}
@@ -335,12 +377,22 @@ const ChatContainer: React.FC = () => {
           )}
           {typing && <TypingAnimation />}
 
-          {/* Suggested Query Buttons */}
+          {/* Suggested Buttons - Query and Action Buttons */}
           {showSuggestedQueries && (
-            <div className="flex flex-wrap justify-center mt-4 pt-4 gap-3">
-              {suggestedQueries.map((q, index) => (
-                <SuggestedQueryButton key={index} text={q}
+            <div className="flex flex-wrap justify-center mt-4 gap-3">
+              {/* Suggested Query Buttons */}
+              {displayedQueries.map((item, index) => (
+                <SuggestedQueryButton 
+                  key={index} 
+                  text={item.text}
                   onClick={handleSuggestedQuery}
+                />
+              ))}
+              {/* Suggested Action Buttons (For All Users) */}
+              {suggestedActions
+                .filter(action => !action.requiresUserToken || hasAccessToken)
+                .map((item, index) => (
+                <SuggestedActionButton key={index} text={item.text} icon={item.icon} onAction={item.onAction} requiresUserToken={item.requiresUserToken}
                 />
               ))}
             </div>
@@ -370,6 +422,7 @@ const ChatContainer: React.FC = () => {
       {/* Input */}
       <ChatInput sendMessage={handleSend} responsePending={typing} />
     </div>
+    </>
   );
 };
 
