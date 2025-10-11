@@ -1,5 +1,5 @@
-// Backend API
-const BaseApiURL = "http://localhost:5001";
+// Backend API - dynamic based on environment
+const BaseApiURL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 /**
  * Helper Function that acts as a wrapper for HTTP Requests.
