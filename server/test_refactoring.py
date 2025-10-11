@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 try:
     from models import *
     from database_config import engine
-    from chat.Rag_service import (
+    from chat.rag_service import (
         get_embeddings_vector,
         get_top3_similar_docs,
         process_input_with_retrieval_continuous

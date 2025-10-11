@@ -12,163 +12,7 @@ from langchain_openai import OpenAIEmbeddings
 import openai
 from dotenv import load_dotenv
 from .enhanced_rag import EnhancedRAGWithWebSearch
-
-load_dotenv()
-openai_client = openai.OpenAI()
-
-def get_top3_similar_docs(query_embedding, k=3):
-    """Retrieve top k most similar documents based on cosine similarity"""
-    if isinstance(query_embedding, np.ndarray):
-        query_embedding = query_embedding.tolist()
-
-    with Session(engine) as session:
-        stmt = (
-            select(EmbeddingStorage)
-            .order_by(EmbeddingStorage.embedding.cosine_distance(query_embedding))
-            .limit(k)
-        )
-        results = session.execute(stmt).scalars().all()
-        return get_detailed_service_info(results)
-
-def get_detailed_service_info(embedding_records):
-    """Retrieve detailed service information from related tables"""
-    detailed_info = []
-
-    with Session(engine) as session:
-        for embedding_record in embedding_records:
-            # Get the raw record
-            raw_record = session.query(RawRecordStorage).filter_by(
-                raw_record_storage_key=embedding_record.record_key
-            ).first()
-
-            if not raw_record:
-                continue
-
-            # Get related information
-            org = session.query(Organisation).filter_by(
-                organisation_key=raw_record.organisation_key
-            ).first()
-
-            service_campus = session.query(ServiceCampus).filter_by(
-                service_campus_key=raw_record.campus_service_key
-            ).first()
-
-            if service_campus:
-                service = session.query(Service).filter_by(
-                    service_key=service_campus.service_key
-                ).first()
-
-                campus = session.query(Campus).filter_by(
-                    campus_key=service_campus.campus_key
-                ).first()
-            else:
-                service = None
-                campus = None
-
-            region = None
-            if raw_record.region_key:
-                region = session.query(Region).filter_by(
-                    region_key=raw_record.region_key
-                ).first()
-
-            # Get optional related data
-            cost = None
-            if raw_record.cost_key:
-                cost = session.query(Cost).filter_by(
-                    cost_key=raw_record.cost_key
-                ).first()
-
-            delivery_method = None
-            if raw_record.delivery_method_key:
-                delivery_method = session.query(DeliveryMethod).filter_by(
-                    delivery_method_key=raw_record.delivery_method_key
-                ).first()
-
-            level_of_care = None
-            if raw_record.level_of_care_key:
-                level_of_care = session.query(LevelOfCare).filter_by(
-                    level_of_care_key=raw_record.level_of_care_key
-                ).first()
-
-            referral_pathway = None
-            if raw_record.referral_pathway_key:
-                referral_pathway = session.query(ReferralPathway).filter_by(
-                    referral_pathway_key=raw_record.referral_pathway_key
-                ).first()
-
-            service_type = None
-            if raw_record.service_type_key:
-                service_type = session.query(ServiceType).filter_by(
-                    service_type_key=raw_record.service_type_key
-                ).first()
-
-            target_population = None
-            if raw_record.target_population_key:
-                target_population = session.query(TargetPopulation).filter_by(
-                    target_population_key=raw_record.target_population_key
-                ).first()
-
-            workforce_type = None
-            if raw_record.workforce_type_key:
-                workforce_type = session.query(WorkforceType).filter_by(
-                    workforce_type_key=raw_record.workforce_type_key
-                ).first()
-
-            # Build detailed info dictionary
-            service_info = {
-                'organisation_name': org.organisation_name if org else None,
-                'service_name': service.service_name if service else None,
-                'campus_name': campus.campus_name if campus else None,
-                'region_name': region.region_name if region else None,
-                'email': service_campus.email if service_campus else None,
-                'phone': service_campus.phone if service_campus else None,
-                'website': service_campus.website if service_campus else None,
-                'address': service_campus.address if service_campus else None,
-                'suburb': service_campus.suburb if service_campus else None,
-                'state': service_campus.state if service_campus else None,
-                'postcode': service_campus.postcode if service_campus else None,
-                'notes': service_campus.notes if service_campus else None,
-                'expected_wait_time': service_campus.expected_wait_time if service_campus else None,
-                'opening_hours_24_7': service_campus.op_hours_24_7 if service_campus else False,
-                'opening_hours_standard': service_campus.op_hours_standard if service_campus else False,
-                'opening_hours_extended': service_campus.op_hours_extended if service_campus else False,
-                'op_hours_extended_details': service_campus.op_hours_extended_details if service_campus else None,
-                'cost': cost.cost if cost else None,
-                'delivery_method': delivery_method.delivery_method if delivery_method else None,
-                'level_of_care': level_of_care.level_of_care if level_of_care else None,
-                'referral_pathway': referral_pathway.referral_pathway if referral_pathway else None,
-                'service_type': service_type.service_type if service_type else None,
-                'target_population': target_population.target_population if target_population else None,
-                'workforce_type': workforce_type.workforce_type if workforce_type else None,
-            }
-
-            detailed_info.append(service_info)
-
-    return detailed_info
-
-def get_completion_from_messages(messages, model="gpt-4o", temperature=0, max_tokens=1000):
-    """Get completion from OpenAI API"""
-    try:
-        response = openai_client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=temperature, 
-            max_tokens=max_tokens, 
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        print(f"Error getting completion: {e}")
-        return "I'm having trouble processing your request right now. Please try again later."
-
-def get_embeddings_vector(text): 
-    """Get embeddings vector for text"""
-    try:
-        embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
-        response = embedding_model.embed_query(text)
-        return response
-    except Exception as e:
-        print(f"Error getting embeddings: {e}")
-        return None
+from .Utils import *
 
 def process_input_with_retrieval_continuous(user_input, conversation_history=[]):
     """
@@ -177,14 +21,14 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
     # Input validation
     if not user_input or not isinstance(user_input, str):
         return "Please provide a valid question about mental health services."
-    
+
     user_input = user_input.strip()
     if len(user_input) == 0:
         return "Please provide a question about mental health services."
-    
+
     if len(user_input) > 1000:
         return "Your message is quite long. Please try to be more concise for better assistance."
-    
+
     # Mental health validation using our new model
     try:
 
@@ -194,13 +38,13 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
             # Log the trigger for monitoring
             print(f"Mental health trigger detected - Category: {validation_result.category}, "
                   f"Word: '{validation_result.matched_word}', Confidence: {validation_result.confidence:.2f}")
-            
+
             # Return the mental health response immediately
             return validation_result.response
     except Exception as e:
         print(f"Mental health validation error: {e}")
         # Continue with normal processing if validation fails
-    
+
     # Continue with normal RAG processing
     try:
         delimiter = "```"
@@ -211,7 +55,7 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
             return "I'm having trouble processing your request. Please try again."
 
         # Get similar documents with full service details
-        related_docs = get_top3_similar_docs(query_embedding)
+        related_docs = get_topk_similar_docs(query_embedding)
 
         # Default assessment values for standard RAG processing
         assessment = {
@@ -295,33 +139,50 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
             formatted_services.append(service_text)
 
         # Add current user input and retrieved documents
-        services_content = "\n".join(formatted_services) if formatted_services else "No specific services found for this query."
-        
+        services_content = "\n".join(
+            formatted_services) if formatted_services else "No specific services found for this query."
+
         user_message = f"""
         User question: {delimiter}{user_input}{delimiter}
-        
-        Please provide a helpful response based on the following relevant mental health services information:
-        
-        {services_content}
-        
-        If the services don't directly match the user's needs, provide general guidance and suggest they contact services directly or look for more specific resources.
-        """
-        
-        messages.append({"role": "user", "content": user_message})
 
+        Please provide a clear and supportive response based on the following relevant mental health services information:
+
+        {services_content}
+
+        If the services don't directly match the user's needs, provide general guidance and suggest they contact the services directly or look for more specific resources.
+
+        Output requirements:
+        - Use plain text only (no Markdown, asterisks, or special formatting symbols).
+        - Use clear field labels to highlight key information (for example: ORGANISATION, ADDRESS, PHONE, EMAIL, WEBSITE, SERVICE TYPE, COST, HOURS).
+        - Keep the layout easy to scan and visually organized.
+        - Adjust the format so that it is comprehensive and nice to the users. 
+
+        Example format:
+        [Drummond Street Services]
+        Address: 100 Drummond St, Carlton VIC 3053
+        Phone: 03 9663 6733
+        Email: enquiries@ds.org.au
+        Website: https://ds.org.au/
+        Service Type: Primary and specialised clinical ambulatory mental health care services; specialised mental health community support services
+        Cost: Free and paid options available
+        Hours: Standard business hours
+        """
+
+        messages.append({"role": "user", "content": user_message})
         final_response = get_completion_from_messages(messages)
-        
+
         return final_response
-        
+
     except Exception as e:
         print(f"Error in RAG processing: {e}")
         return f"""
           I'm experiencing some technical difficulties. Please try again, or if you need immediate help, 
           please contact Lifeline at 13 11 14 or emergency services at 000.
           """
-        
+
 
 enhanced_rag = EnhancedRAGWithWebSearch()
+
 
 def process_input_with_fallback(user_input, conversation_history=[]):
     """
@@ -329,14 +190,14 @@ def process_input_with_fallback(user_input, conversation_history=[]):
     """
     if not user_input or not isinstance(user_input, str):
         return "Please provide a valid question about mental health services."
-    
+
     user_input = user_input.strip()
     if len(user_input) == 0:
         return "Please provide a question about mental health services."
-    
+
     if len(user_input) > 1000:
         return "Your message is quite long. Please try to be more concise for better assistance."
-    
+
     # Keep your mental health trigger validation
     try:
         validation_result = MentalHealthModel().validate_input(user_input)
@@ -345,7 +206,7 @@ def process_input_with_fallback(user_input, conversation_history=[]):
             return validation_result.response
     except Exception as e:
         print(f"Mental health validation error: {e}")
-    
+
     # Replace your RAG logic with the enhanced system
     try:
         return enhanced_rag.process_with_intelligent_fallback(

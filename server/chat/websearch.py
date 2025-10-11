@@ -1,10 +1,11 @@
 import os
 from typing import List, Dict, Optional
-from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 from langchain.agents import Tool
 from dotenv import load_dotenv
 import logging
 import json
+from .Utils import *
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ class LangChainTavilySearch:
             self.search_tool = None
         else:
             # Initialize LangChain's Tavily tool
-            self.search_tool = TavilySearchResults(
+            self.search_tool = TavilySearch(
                 max_results=5,
                 search_depth="advanced",
                 include_domains=[
@@ -94,9 +95,6 @@ class LangChainTavilySearch:
 
 
 class EnhancedRAGWithWebSearch:
-    def process_with_fallback(self, user_input, conversation_history=[]):
-        from your_app.rag_service, import get_embeddings_vector, get_top3_similar_docs, get_completion_from_messages
-    
     """
     Main RAG service with automatic fallback to web search
     """
