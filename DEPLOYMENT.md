@@ -5,9 +5,15 @@ Your app will be accessible at:
 - **Frontend**: `https://yourdomain.com`
 - **Backend API**: `https://api.yourdomain.com`
 
+**Note:** This project uses a **self-hosted GitHub Actions runner** for deployments. The runner must be installed on your VM to enable automatic deployments via GitHub Actions.
+
 ## Setup Instructions
 
-### 1. Install Docker on EC2 (One-time setup)
+### 1. Install Docker on VM (One-time setup)
+
+Commands vary by cloud provider and OS:
+
+#### AWS EC2 (Amazon Linux)
 SSH into your EC2 instance and run:
 
 ```bash
@@ -28,7 +34,28 @@ sudo usermod -aG docker ec2-user
 exit
 ```
 
-**SSH back into EC2**, then continue:
+#### Azure VM (Ubuntu/Debian)
+SSH into your Azure VM and run:
+
+```bash
+# Update system packages
+sudo apt-get update
+
+# Install Docker
+sudo apt-get install -y docker.io
+
+# Start Docker service and enable it to start on boot
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add azureuser to docker group (so you don't need sudo for docker commands)
+sudo usermod -aG docker azureuser
+
+# IMPORTANT: Log out and log back in for group changes to take effect
+exit
+```
+
+**SSH back into your VM**, then continue:
 
 ```bash
 # Install Docker Compose
@@ -40,12 +67,45 @@ docker --version
 docker-compose --version
 ```
 
-### 2. Create Traefik Network (One-time setup)
+### 2. Setup Self-Hosted GitHub Runner (One-time setup)
+
+Since this project uses a self-hosted runner, you need to install the GitHub Actions runner on your VM:
+
+1. Go to your GitHub repository → **Settings** → **Actions** → **Runners** → **New self-hosted runner**
+
+2. Follow the instructions provided by GitHub. They will look similar to:
+
+```bash
+# Create a folder for the runner
+mkdir actions-runner && cd actions-runner
+
+# Download the latest runner package
+curl -o actions-runner-linux-x64-2.311.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.311.0/actions-runner-linux-x64-2.311.0.tar.gz
+
+# Extract the installer
+tar xzf ./actions-runner-linux-x64-2.311.0.tar.gz
+
+# Configure the runner (use the token provided by GitHub)
+./config.sh --url https://github.com/yourusername/your-repo --token YOUR_TOKEN_HERE
+
+# Install as a service (so it runs automatically)
+sudo ./svc.sh install
+
+# Start the runner service
+sudo ./svc.sh start
+
+# Check status
+sudo ./svc.sh status
+```
+
+3. Verify the runner appears as "Idle" in your GitHub repository's Actions → Runners page
+
+### 3. Create Traefik Network (One-time setup)
 ```bash
 docker network create traefik-public
 ```
 
-### 3. Add GitHub Secrets
+### 4. Add GitHub Secrets
 Go to your repo → Settings → Secrets and variables → Actions
 
 Add these secrets:
@@ -54,12 +114,12 @@ Add these secrets:
 - `DOCKER_IMAGE_STAGING` = `mental-health-app` (or any name you want)
 - All other existing secrets (DATABASE_URL, JWT_SECRET, etc.)
 
-### 4. DNS Configuration
-Point these DNS records to your AWS server IP:
+### 5. DNS Configuration
+Point these DNS records to your server IP (AWS or Azure):
 - A record: `yourdomain.com` → `your-server-ip`
 - A record: `api.yourdomain.com` → `your-server-ip`
 
-### 5. Deploy
+### 6. Deploy
 Push to main branch - GitHub Actions will automatically deploy
 
 ## How It Works
