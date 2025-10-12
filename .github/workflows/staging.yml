@@ -40,7 +40,7 @@ jobs:
 
       - name: Clean up Docker
         run: |
-          docker system prune -af --volumes || true
+          docker image prune -f || true
 
       - name: Build services sequentially
         run: |
