@@ -13,7 +13,11 @@ import openai
 from dotenv import load_dotenv
 
 load_dotenv()
-openai_client = openai.OpenAI()
+# Use OpenRouter for chat completions (not blocked in AU)
+openai_client = openai.OpenAI(
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url="https://openrouter.ai/api/v1"
+)
 
 def get_topk_similar_docs(query_embedding, k = 5):
     """Retrieve top k most similar documents based on cosine similarity"""
@@ -161,12 +165,38 @@ def get_completion_from_messages(messages, model="gpt-4o", temperature=0, max_to
         return "I'm having trouble processing your request right now. Please try again later."
 
 def get_embeddings_vector(text):
-    """Get embeddings vector for text"""
+    """Get embeddings vector for text - uses direct OpenAI (embeddings work from AU)"""
     try:
-        embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
-        response = embedding_model.embed_query(text)
-        return response
+        # Use direct OpenAI API for embeddings (not blocked in Australia)
+        # Only chat completions are blocked, embeddings work fine
+        import requests
+
+        headers = {
+            "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "model": "text-embedding-3-small",
+            "input": text
+        }
+
+        response = requests.post(
+            "https://api.openai.com/v1/embeddings",  # Direct OpenAI for embeddings
+            headers=headers,
+            json=data
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            return result['data'][0]['embedding']
+        else:
+            print(f"Error getting embeddings: {response.status_code} - {response.text}")
+            return None
+
     except Exception as e:
         print(f"Error getting embeddings: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
