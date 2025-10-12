@@ -169,7 +169,7 @@ def get_embeddings_vector(text):
     try:
         import requests
 
-        # Try OpenAI first (works from most regions)
+        # Try OpenAI first (works from most regions, cheaper)
         headers = {
             "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}",
             "Content-Type": "application/json"
@@ -191,40 +191,38 @@ def get_embeddings_vector(text):
             result = response.json()
             return result['data'][0]['embedding']
 
-        # If OpenAI fails with 403 (geo-blocked), fall back to Jina AI (free, global access)
+        # If OpenAI fails with 403 (geo-blocked), fall back to Google Gemini (free, global access)
         if response.status_code == 403:
-            print(f"OpenAI blocked (403), falling back to Jina AI for embeddings")
+            print(f"OpenAI blocked (403), falling back to Google Gemini for embeddings")
 
-            jina_api_key = os.getenv('JINA_API_KEY')
-            if not jina_api_key:
-                print("Error: JINA_API_KEY not set in environment variables")
+            gemini_api_key = os.getenv('GEMINI_API_KEY')
+            if not gemini_api_key:
+                print("Error: GEMINI_API_KEY not set in environment variables")
                 return None
 
-            # Jina AI provides free embeddings API with global access
-            # Free tier: 10M tokens, then ~$0.02 per million tokens
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {jina_api_key}"
-            }
+            # Google Gemini provides free embeddings API with global access
+            # Supports 1536 dimensions (same as OpenAI text-embedding-3-small)
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_api_key)
 
-            data = {
-                "model": "jina-embeddings-v3",
-                "input": [text],
-                "task": "retrieval.passage"
-            }
+            try:
+                result = genai.embed_content(
+                    model="models/embedding-001",  # Use gemini-embedding-001
+                    content=text,
+                    task_type="retrieval_document",
+                    output_dimensionality=1536
+                )
+                embedding = result['embedding']
 
-            response = requests.post(
-                "https://api.jina.ai/v1/embeddings",
-                headers=headers,
-                json=data,
-                timeout=30
-            )
+                # Normalize the embedding (required for 768 and 1536 dims)
+                import numpy as np
+                embedding_array = np.array(embedding)
+                normalized_embedding = embedding_array / np.linalg.norm(embedding_array)
 
-            if response.status_code == 200:
-                result = response.json()
-                return result['data'][0]['embedding']
-
-            print(f"Jina AI fallback also failed: {response.status_code} - {response.text}")
+                print(f"✅ Google Gemini embeddings successful (1536 dims, normalized)")
+                return normalized_embedding.tolist()
+            except Exception as e:
+                print(f"Google Gemini fallback failed: {e}")
 
         print(f"Error getting embeddings: {response.status_code} - {response.text}")
         return None
