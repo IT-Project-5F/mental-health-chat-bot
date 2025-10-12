@@ -29,9 +29,9 @@ jobs:
     steps:
       - name: Clean workspace
         run: |
+          # Only clean workspace files, not Docker resources
           sudo chown -R azureuser:azureuser $GITHUB_WORKSPACE || true
-          sudo chmod -R 755 $GITHUB_WORKSPACE || true
-          find $GITHUB_WORKSPACE -type d -name "__pycache__" -exec sudo rm -rf {} + 2>/dev/null || true
+          find $GITHUB_WORKSPACE -mindepth 1 -delete 2>/dev/null || true
 
       - name: Checkout repository
         uses: actions/checkout@v4
