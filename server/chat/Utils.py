@@ -165,12 +165,11 @@ def get_completion_from_messages(messages, model="gpt-4o", temperature=0, max_to
         return "I'm having trouble processing your request right now. Please try again later."
 
 def get_embeddings_vector(text):
-    """Get embeddings vector for text - uses direct OpenAI (embeddings work from AU)"""
+    """Get embeddings vector for text - tries OpenAI first, falls back to OpenRouter"""
     try:
-        # Use direct OpenAI API for embeddings (not blocked in Australia)
-        # Only chat completions are blocked, embeddings work fine
         import requests
 
+        # Try OpenAI first (works from most regions)
         headers = {
             "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}",
             "Content-Type": "application/json"
@@ -182,17 +181,44 @@ def get_embeddings_vector(text):
         }
 
         response = requests.post(
-            "https://api.openai.com/v1/embeddings",  # Direct OpenAI for embeddings
+            "https://api.openai.com/v1/embeddings",
             headers=headers,
-            json=data
+            json=data,
+            timeout=10
         )
 
         if response.status_code == 200:
             result = response.json()
             return result['data'][0]['embedding']
-        else:
-            print(f"Error getting embeddings: {response.status_code} - {response.text}")
-            return None
+
+        # If OpenAI fails with 403 (geo-blocked), try OpenRouter
+        if response.status_code == 403:
+            print(f"OpenAI blocked, falling back to OpenRouter for embeddings")
+
+            headers = {
+                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://mch-staging.mooo.com"
+            }
+
+            data = {
+                "model": "openai/text-embedding-3-small",
+                "input": text
+            }
+
+            response = requests.post(
+                "https://openrouter.ai/api/v1/embeddings",
+                headers=headers,
+                json=data,
+                timeout=10
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                return result['data'][0]['embedding']
+
+        print(f"Error getting embeddings: {response.status_code} - {response.text}")
+        return None
 
     except Exception as e:
         print(f"Error getting embeddings: {e}")
