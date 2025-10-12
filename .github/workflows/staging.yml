@@ -27,6 +27,12 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
     steps:
+      - name: Clean workspace
+        run: |
+          sudo chown -R azureuser:azureuser $GITHUB_WORKSPACE || true
+          sudo chmod -R 755 $GITHUB_WORKSPACE || true
+          find $GITHUB_WORKSPACE -type d -name "__pycache__" -exec sudo rm -rf {} + 2>/dev/null || true
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
