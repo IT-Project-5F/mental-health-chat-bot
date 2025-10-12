@@ -191,31 +191,40 @@ def get_embeddings_vector(text):
             result = response.json()
             return result['data'][0]['embedding']
 
-        # If OpenAI fails with 403 (geo-blocked), try OpenRouter
+        # If OpenAI fails with 403 (geo-blocked), fall back to Jina AI (free, global access)
         if response.status_code == 403:
-            print(f"OpenAI blocked, falling back to OpenRouter for embeddings")
+            print(f"OpenAI blocked (403), falling back to Jina AI for embeddings")
 
+            jina_api_key = os.getenv('JINA_API_KEY')
+            if not jina_api_key:
+                print("Error: JINA_API_KEY not set in environment variables")
+                return None
+
+            # Jina AI provides free embeddings API with global access
+            # Free tier: 10M tokens, then ~$0.02 per million tokens
             headers = {
-                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "https://mch-staging.mooo.com"
+                "Authorization": f"Bearer {jina_api_key}"
             }
 
             data = {
-                "model": "openai/text-embedding-3-small",
-                "input": text
+                "model": "jina-embeddings-v3",
+                "input": [text],
+                "task": "retrieval.passage"
             }
 
             response = requests.post(
-                "https://openrouter.ai/api/v1/embeddings",
+                "https://api.jina.ai/v1/embeddings",
                 headers=headers,
                 json=data,
-                timeout=10
+                timeout=30
             )
 
             if response.status_code == 200:
                 result = response.json()
                 return result['data'][0]['embedding']
+
+            print(f"Jina AI fallback also failed: {response.status_code} - {response.text}")
 
         print(f"Error getting embeddings: {response.status_code} - {response.text}")
         return None
