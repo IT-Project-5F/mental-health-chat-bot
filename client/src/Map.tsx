@@ -1,6 +1,79 @@
-function Map() {
+import { MapContainer, TileLayer, Marker, Popup, useMap as useLeafletMap } from 'react-leaflet';
+import L from 'leaflet';
+import { useMap } from './MapContext';
+import { useEffect } from 'react';
+
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+const DefaultIcon = L.icon({
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
+
+type MapProps = {
+    center?: [number, number];
+    zoom?: number;
+}
+
+// Component to handle map view updates
+function MapViewController({ markers }: { markers: any[] }) {
+    const map = useLeafletMap();
+
+    useEffect(() => {
+        if (markers && markers.length > 0) {
+            // If single marker, center on it
+            if (markers.length === 1) {
+                map.setView(markers[0].position, 14, { animate: true });
+            }
+            // If multiple markers, fit bounds to show all
+            else {
+                const bounds = L.latLngBounds(markers.map(m => m.position));
+                map.fitBounds(bounds, { padding: [50, 50], animate: true });
+            }
+        }
+    }, [markers, map]);
+
+    return null;
+}
+
+function Map({
+  center = [-37.8136, 144.9631],
+  zoom = 13,
+}: MapProps) {
+    const { markers } = useMap();
+
     return(
-        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d758022.2811309241!2d144.393725927707!3d-37.9696430117016!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad646b5d2ba4df7%3A0x4045675218ccd90!2sMelbourne%20VIC!5e1!3m2!1sen!2sau!4v1755083385905!5m2!1sen!2sau" className="w-full h-full" loading="lazy"></iframe>
+        <div className="relative w-screen h-screen rounded-lg overflow-hidden shadow">
+            <MapContainer
+                center={center}
+                zoom={zoom}
+                scrollWheelZoom={true}
+                className="w-full h-full"
+            >
+                <TileLayer
+                attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <MapViewController markers={markers} />
+                {markers.map((m) => (
+                    <Marker key={m.id} position={m.position}>
+                        <Popup>
+                            <div className="space-y-2">
+                                <h3 className="font-bold text-sm">{m.details.organisation}</h3>
+                                <p className="text-xs">{m.details.service_name}</p>
+                                <p className="text-xs text-gray-600">{m.address}</p>
+                            </div>
+                        </Popup>
+                    </Marker>
+                ))}
+
+            </MapContainer>
+        </div>
     );
 }
 

@@ -27,6 +27,12 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
     steps:
+      - name: Clean workspace
+        run: |
+          # Only clean workspace files, not Docker resources
+          sudo chown -R azureuser:azureuser $GITHUB_WORKSPACE || true
+          find $GITHUB_WORKSPACE -mindepth 1 -delete 2>/dev/null || true
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -40,16 +46,16 @@ jobs:
 
       - name: Clean up Docker
         run: |
-          docker system prune -af --volumes || true
+          docker image prune -f || true
 
       - name: Build services sequentially
         run: |
-          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build postgres
-          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build db-init
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache postgres
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache db-init
           docker image prune -f
-          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build server
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache server
           docker image prune -f
-          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build client
+          docker-compose -p "$COMPOSE_PROJECT_NAME" -f docker-compose.yml build --no-cache client
           docker image prune -f
 
       - name: Start services

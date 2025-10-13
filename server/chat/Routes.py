@@ -1,21 +1,23 @@
 from fastapi import APIRouter, HTTPException
 from .rag_service import process_input_with_retrieval_continuous
+from .Utils import get_topk_similar_docs, get_embeddings_vector
 from guardrails import Guard
 from .Model import *
 import logging
 from tasks import cleanup_expired_sessions, SESSION_TTL_HOURS, SESSION_INACTIVITY_MINUTES, MAX_SESSIONS
 import asyncio
-import uuid 
+import uuid
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict
+import sys
 import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from geocoding_service import extract_and_geocode_from_service_data
 
-router = APIRouter() 
+router = APIRouter()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-current_dir = os.path.dirname(__file__)
 
 chat_sessions: Dict[str, dict] = {}
 
@@ -85,12 +87,24 @@ async def chat_endpoint(request: ChatRequest):
             timestamp=datetime.now().isoformat()
         )
         conversation_history.append(user_message.dict())
+
+        # Get similar documents for geocoding
+        related_docs = get_topk_similar_docs(get_embeddings_vector(request.message), k=3)
+
         # Process the message with RAG and conversation context
         response = process_input_with_retrieval_continuous(
-            request.message, 
+            request.message,
             [{"role": msg["role"], "content": msg["content"]} for msg in conversation_history[:-1]]
         )
-        
+
+        # Extract and geocode addresses from the service data
+        markers = []
+        try:
+            markers = await extract_and_geocode_from_service_data(related_docs)
+            logger.info(f"Generated {len(markers)} map markers")
+        except Exception as e:
+            logger.warning(f"Error generating map markers: {str(e)}")
+
         # Add assistant response to history
         assistant_message = Message(
             role="assistant",
@@ -98,9 +112,9 @@ async def chat_endpoint(request: ChatRequest):
             timestamp=datetime.now().isoformat()
         )
         conversation_history.append(assistant_message.dict())
-        
+
         logger.info("Successfully processed chat request")
-        return ChatResponse(response=response, session_id=session_id)
+        return ChatResponse(response=response, session_id=session_id, markers=markers)
     
     except Exception as e:
         logger.error(f"Error processing chat request: {str(e)}")

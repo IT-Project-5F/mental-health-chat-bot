@@ -8,13 +8,15 @@ const SendBubble: React.FC<SendBubbleProps> = ({ text }) => {
         <div className="
             max-w-[85%]
             p-3
-            rounded-2xl
+            rounded-tr-md rounded-tl-2xl rounded-br-2xl rounded-bl-2xl
             bg-[#62BB46] text-white
             shadow-lg
             ml-auto
             break-words text-left
             self-end
+            animate-slideIn
             "
+            style={{ animation: 'slideIn 0.3s ease-out forwards' }}
         >
             <p className="whitespace-pre-wrap">{text}</p>
         </div>

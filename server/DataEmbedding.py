@@ -82,8 +82,12 @@ def splitting_dataset(MAX_CHUNK_TOKENS = 512):
 
 
 
-def get_embeddings_vector(text): 
-  embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
+def get_embeddings_vector(text):
+  import os
+  embedding_model = OpenAIEmbeddings(
+    model="text-embedding-3-small",
+    openai_api_key=os.getenv("OPENAI_API_KEY")
+  )
   response = embedding_model.embed_query(text)
   return response
 

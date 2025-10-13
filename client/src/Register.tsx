@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { request } from './api';
+import { Button } from './components/ui/button';
 
 function Register() {
     const navigate = useNavigate();
@@ -32,7 +33,7 @@ function Register() {
     return (
         <div className="absolute w-screen h-screen bg-[#01563E] inset-0">
             <form onSubmit={handleRegister} className="flex flex-col h-screen items-center justify-center">
-                <h1 className="p-2 sm:p-6 text-lg sm:text-3xl font-bold text-[#CBDB2F]">Register</h1>
+                <h1 className="p-6 text-3xl font-bold text-[#CBDB2F]">Register</h1>
                 <div className="flex flex-col items-start">
                     <label htmlFor="username" className="m-2 text-[#CBDB2F] font-bold hidden sm:block">Username</label>
                     <input
@@ -41,7 +42,7 @@ function Register() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Your username"
-                        className="px-6 py-3 mb-2 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
+                        className="px-6 py-3 m-1 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
                     />
                 </div>
                 <div className="flex flex-col items-start">
@@ -52,7 +53,7 @@ function Register() {
                         placeholder="Your email"
                         value={email_address}
                         onChange={(e) => setEmailAddress(e.target.value)}
-                        className="px-6 py-3 mb-0 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
+                        className="px-6 py-3 m-1 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
                     />
                 </div>
                 <div className="flex flex-col items-start">
@@ -63,7 +64,7 @@ function Register() {
                         placeholder="Your location"
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
-                        className="px-6 py-3 mb-0 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
+                        className="px-6 py-3 m-1 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
                     />
                 </div>
                 <div className="flex flex-col items-start">
@@ -74,16 +75,17 @@ function Register() {
                         placeholder="Your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="px-6 py-3 mb-0 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
+                        className="px-6 py-3 m-1 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
                     />
                 </div>
-                <div className="flex flex-col m-2 sm:m-6 text-sm sm:text-lg">
-                    <button className="px-8 sm:px-10 py-2 m-2 font-bold text-[#014532] bg-[#CBDB2F] rounded-3xl hover:bg-[#62BB46] hover:scale-102 duration-150">Register</button>
+                <div className="m-2 sm:m-6 text-sm sm:text-lg">
+                    <Button size={"xl"}>Register</Button>
                 </div>
                 <div className="flex text-xs sm:text-sm">
                     <p className="mr-1 text-[#CBDB2F]">Already have an account?</p>
                     <Link
                         to="/login"
+                        className="text-[#CBDB2F] underline hover:text-white"
                     >
                         Log In
                     </Link>

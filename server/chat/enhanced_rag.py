@@ -12,7 +12,9 @@ class EnhancedRAGWithWebSearch:
     """
 
     def __init__(self):
-        self.openai_client = openai.OpenAI()
+        self.openai_client = openai.OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+        )
         self.web_search_api_key = os.getenv("SERPER_API_KEY")  # Using Serper for web search
 
     def process_with_intelligent_fallback(self, user_input: str, conversation_history: List[Dict] = None) -> str:
