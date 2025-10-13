@@ -263,7 +263,7 @@ function Users({ pageSize = 20 }: UserProps) {
                 {loadingPending ? (
                     <div>Loading...</div>
                 ) : errorPending ? (
-                    <div className="text-red-500">Error: {error}</div>
+                    <div className="text-red-500">Error: {errorPending}</div>
                 ) : (
                     <DataTable columns={getPendingUsers(handleAcceptUser, handleDeclineUser)} data={pendingUsers} pageSize={pageSize} />
                 )}
