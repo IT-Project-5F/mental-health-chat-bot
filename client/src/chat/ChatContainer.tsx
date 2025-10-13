@@ -3,6 +3,9 @@ import ChatInput from './ChatInput';
 import SendBubble from './SenderBubble';
 import ResponseBubble from './ResponseBubble';
 import TypingAnimation from './TypingAnimation';
+import SuggestedActionButton from './SuggestedActionButton.tsx';
+import SuggestedQueryButton from './SuggestedQueryButton.tsx';
+import AddServiceFormModal from './modalWindows/AddServiceFormModal.tsx';
 import { request } from '../api.ts';
 
 /* Types and Interfaces */
@@ -11,6 +14,8 @@ interface Message {
   text: string;
   sender: 'user' | 'chatbot'
 }
+
+type ModalType = "addService" | "updateLocation" | null;
 
 /**
  * Functionalities:
@@ -21,14 +26,11 @@ interface Message {
  * - Chat Container can be enlarged by dragging using mouse (desktop only) or touch screen (for mobile or desktop)
  */
 const ChatContainer: React.FC = () => {    
-  // Example Messages
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: 'Find me mental health services in Parkville.', sender: 'user' },
-    { id: 2, text: 'I found five clinics within 5km of Parkville.', sender: 'chatbot' },
-    { id: 3, text: 'I want to find clinics specialising in treatment for anxiety.', sender: 'user' },
-    { id: 4, text: 'View the map.', sender: 'chatbot' },
+    { id: 1, text: 'Hello 👋, how can I help you today?\nType your query below or select a suggested action button to get started!', sender: 'chatbot' },
   ])
   const [sessionID, setSessionID] = useState<string | null>(null);
+
 
   /* State */
   const [isOpen, setIsOpen] = useState(true);
@@ -37,15 +39,85 @@ const ChatContainer: React.FC = () => {
   const [containerWidth, setContainerWidth] = useState(window.innerWidth * 0.45); // Default Width of Chat Container (Desktop)
   const [containerHeight, setContainerHeight] = useState(window.innerHeight * 0.5); // Default Height of Chat Container (Mobile)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  
+  // States relating to suggested buttons and modal windows
+  const [firstChatbotMessage, setFirstChatbotMessage] = useState(true);
+  const [delayShowingSuggestions, setDelayShowingSuggestions] = useState(false); // For delaying when suggested query options are shown
+  const [displayedQueries, setDisplayedQueries] = useState<typeof suggestedQueries>([]); // For random selection of suggested query buttons
+  const [showScrollToBottomArrow, setShowScrollToBottomArrow] = useState(false); // Indicates when 'Scroll to Bottom' arrow is displayed in container
+  const [activeModal, setActiveModal] = useState<ModalType>() // To display pop-up windows
+
+  // Check if user has access-token (for conditional rendering of certain suggested action buttons)
+  const [hasAccessToken, setHasAccessToken] = useState(false);
+  useEffect(() => {
+    const userToken = localStorage.getItem("access_token");
+    setHasAccessToken(Boolean(userToken));
+  }, []);
+
+  /* Derived values for UI conditional rendering */
+  const lastMessageFromChatbot = messages.length > 0 && messages[messages.length - 1].sender === 'chatbot';
+  const showSuggestedQueries = !typing && lastMessageFromChatbot && delayShowingSuggestions;
+
+
   /* Refs */
   const messageEndRef = useRef<HTMLDivElement | null>(null); // End Position of Latest Message
-    
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null); // Track how much user has scrolled up in container
+
+  /* Animation for message entry in chat container */
+  // Keyframes for send/response message entry animation
+  const messageAnimation = `
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulseArrow {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); } 
+  }
+  `;
+  // Keyframes in style tag
+  useEffect(() => {
+    const styleTag = document.createElement('style');
+    styleTag.innerHTML = messageAnimation;
+    document.head.appendChild(styleTag);
+    return () => {
+      document.head.removeChild(styleTag);
+    };
+  }, []);
+
+
   /* Effects */
-  // Auto scroll to bottom of latest sent message
+  // When message is sent, auto scroll to bottom of chat history
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({behavior: 'smooth' });
   }, [messages, typing]);
+
+
+  // When user opens chat container using the side arrow tab, auto scroll to bottom of chat history
+  useEffect(() => {
+    if (isOpen) {
+      messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, typing, isOpen]);
+
+
+  // Track how far above the user has scrolled in the chat container to show 'Scroll to Bottom' arrow
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const checkScroll = () => {
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+    setShowScrollToBottomArrow(distanceFromBottom > 1000); // adjust threshold as needed
+    };
+
+    checkScroll();
+
+    container.addEventListener('scroll', checkScroll);
+    return () => container.removeEventListener('scroll', checkScroll);
+  }, [isOpen, messages]);
+
 
   // Updating the state for mobile screen width
   useEffect(() => {
@@ -53,6 +125,29 @@ const ChatContainer: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+
+  // Handling rendering of suggested queries - Random suggestions and delay of rendering after response
+  useEffect(() => {
+    if (!typing && lastMessageFromChatbot) {
+      const timeout = setTimeout(() => {
+        // Display 3 suggested queries for a new chat session
+        if (firstChatbotMessage) {
+          setDisplayedQueries(suggestedQueries.slice(0, 3));
+          setFirstChatbotMessage(false);
+        } else {
+          // Choose 2 random suggested queries to be displayed once a chatbot response has been received
+          const shuffled = [...suggestedQueries].sort(() => Math.random() - 0.5);
+          setDisplayedQueries(shuffled.slice(0, 2));
+        }
+        setDelayShowingSuggestions(true);
+      }, 800);
+      return () => clearTimeout(timeout);
+    } else {
+      setDelayShowingSuggestions(false);
+    }
+  }, [typing, lastMessageFromChatbot]);
+
 
   // Dragging functionality to resize the chat container
   useEffect(() => {
@@ -106,6 +201,17 @@ const ChatContainer: React.FC = () => {
       window.removeEventListener('touchend', stopDragging);
     };
   }, [isDragging, isMobile]);
+
+
+  /* Helper Function - Handle sending of suggested queries */
+  const handleSuggestedQuery = (query: string) => {
+    handleSend(query);
+  };
+
+  /* Helper Function - Handle scrolling to bottom */
+  const handleScrollToBottom = () => {
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
 
   /* Send Message Function 
@@ -162,12 +268,30 @@ const ChatContainer: React.FC = () => {
     };
   };
 
-
+  /********************************************************************************/
+  /* Suggested Query and Suggested Action Buttons */
+  const suggestedQueries = [
+    { text: "Find health services and clinics with short wait times" },
+    { text: "What online health services are available?" },
+    { text: "See services available after hours or on weekends" },
+    { text: "Find services that don't require a GP referral" },
+    { text: "Explore free or low-cost health services" },
+  ];
+  const suggestedActions = [
+    { text: "Add a new service", 
+      icon:<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>, 
+      onAction: () => setActiveModal("addService"),
+      requiresUserToken: false, // FOR TESTING, CHANGE TO TRUE
+    },
+  ];
+  
+  /********************************************************************************/
   /* Rendering: Case - Chat Container is closed */
   if (!isOpen) {
     return (
       <button
-        className={`fixed right-0 ${isMobile ? 'bottom-0 w-full flex justify-center items-center' : 'top-1/2 -translate-y-1/2'} 
+      style={{ animation: 'pulseArrow 1.5s ease-in-out infinite',}}  
+      className={`fixed right-0 ${isMobile ? 'bottom-0 w-full flex justify-center items-center' : 'top-1/2 -translate-y-1/2'} 
           bg-[#014532] text-white px-2.5 py-5 rounded-l-lg shadow-md hover:bg-[#026b4c] 
           transition-transform duration-300 ease-in-out hover:scale-110`}
         onClick={() => setIsOpen(true)}
@@ -190,6 +314,13 @@ const ChatContainer: React.FC = () => {
 
   /* Rendering: Case - Chat Container is open */
   return (
+    <>
+    {/* Modal Windows - Rendered when Suggested Action Buttons are Clicked */}
+    {activeModal === "addService" && (
+      <AddServiceFormModal
+        onClose={() => setActiveModal(null)} />
+    )}
+
     <div 
       style={isMobile ? { height: containerHeight } : { width: containerWidth }}
       className={`fixed ${isMobile ? 'bottom-0 left-0 w-full rounded-t-lg' : 'right-0 top-0 h-full'}
@@ -219,20 +350,13 @@ const ChatContainer: React.FC = () => {
       </button>
       
       {/* Header */}
-      <div className="flex p-1.5 bg-[#013F2D] border-t border-gray-700">
-        <button 
-          className="ml-auto p-1 rounded-full hover:bg-[#215B4B] transition-transform duration-300 ease-in-out hover:scale-90"
-          onClick = {() => setIsOpen(false)}
-        >
-          {/* Close chat container button */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 30 30" fill="none">
-            <path d="M22.5 22.5L15 15M15 15L7.5 7.5M15 15L22.5 7.5M15 15L7.5 22.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+      <div className="flex px-3 py-5 bg-gradient-to-r from-[#FDB4C6] to-[#62BB46] bg-[#013F2D]">
       </div>
       
       {/* Messages */}
-      <div className="flex-1 flex-col overflow-y-auto p-4 space-y-6">
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 flex-col overflow-y-auto p-4 space-y-6">
         <div className="max-w-[600px] mx-auto space-y-6">
           {messages.map((msg) =>
             msg.sender === 'user' ? (
@@ -242,12 +366,53 @@ const ChatContainer: React.FC = () => {
             )
           )}
           {typing && <TypingAnimation />}
+
+          {/* Suggested Buttons - Query and Action Buttons */}
+          {showSuggestedQueries && (
+            <div className="flex flex-wrap justify-center mt-4 gap-3">
+              {/* Suggested Query Buttons */}
+              {displayedQueries.map((item, index) => (
+                <SuggestedQueryButton 
+                  key={index} 
+                  text={item.text}
+                  onClick={handleSuggestedQuery}
+                />
+              ))}
+              {/* Suggested Action Buttons (For All Users) */}
+              {suggestedActions
+                .filter(action => !action.requiresUserToken || hasAccessToken)
+                .map((item, index) => (
+                <SuggestedActionButton key={index} text={item.text} icon={item.icon} onAction={item.onAction} requiresUserToken={item.requiresUserToken}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Conditional Rendering - Scroll to Bottom Arrow */}
+          {showScrollToBottomArrow && (
+            <div className={`sticky bottom-4 w-full flex justify-center z-50 pointer-events-none"`}>
+              <button
+                onClick={handleScrollToBottom}
+                className="bg-[#026b4c] hover:bg-[#03855f] text-white p-2 rounded-full shadow-lg
+                          transition-transform duration-200 hover:scale-110 pointer-events-auto"
+                style={{ animation: 'pulseArrow 1.5s ease-in-out infinite' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 15l-6 6-6-6" />
+                  <path d="M12 3v18" />
+                </svg>
+              </button>
+            </div>
+          )}
+
           <div ref={messageEndRef} />
         </div>
       </div>
+      
       {/* Input */}
       <ChatInput sendMessage={handleSend} responsePending={typing} />
     </div>
+    </>
   );
 };
 
