@@ -13,10 +13,9 @@ import openai
 from dotenv import load_dotenv
 
 load_dotenv()
-# Use OpenRouter for chat completions (not blocked in AU)
+# Use OpenAI directly for chat completions
 openai_client = openai.OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
+    api_key=os.getenv("OPENAI_API_KEY")
 )
 
 def get_topk_similar_docs(query_embedding, k = 5):
@@ -190,39 +189,6 @@ def get_embeddings_vector(text):
         if response.status_code == 200:
             result = response.json()
             return result['data'][0]['embedding']
-
-        # If OpenAI fails with 403 (geo-blocked), fall back to Google Gemini (free, global access)
-        if response.status_code == 403:
-            print(f"OpenAI blocked (403), falling back to Google Gemini for embeddings")
-
-            gemini_api_key = os.getenv('GEMINI_API_KEY')
-            if not gemini_api_key:
-                print("Error: GEMINI_API_KEY not set in environment variables")
-                return None
-
-            # Google Gemini provides free embeddings API with global access
-            # Supports 1536 dimensions (same as OpenAI text-embedding-3-small)
-            import google.generativeai as genai
-            genai.configure(api_key=gemini_api_key)
-
-            try:
-                result = genai.embed_content(
-                    model="models/embedding-001",  # Use gemini-embedding-001
-                    content=text,
-                    task_type="retrieval_document",
-                    output_dimensionality=1536
-                )
-                embedding = result['embedding']
-
-                # Normalize the embedding (required for 768 and 1536 dims)
-                import numpy as np
-                embedding_array = np.array(embedding)
-                normalized_embedding = embedding_array / np.linalg.norm(embedding_array)
-
-                print(f"✅ Google Gemini embeddings successful (1536 dims, normalized)")
-                return normalized_embedding.tolist()
-            except Exception as e:
-                print(f"Google Gemini fallback failed: {e}")
 
         print(f"Error getting embeddings: {response.status_code} - {response.text}")
         return None

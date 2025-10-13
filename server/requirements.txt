@@ -18,4 +18,3 @@ codecov>=2.1.13
 resend
 langchain-community
 langchain-tavily
-google-generativeai
