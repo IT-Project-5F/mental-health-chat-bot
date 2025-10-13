@@ -9,13 +9,15 @@ import ProtectedRoute from "./ProtectedRoute.tsx";
 import Portal from "./admin/Portal.tsx"
 import QuickClose from "./QuickClose.tsx";
 import ServiceCreationForm from "./formComponents/ServiceCreationForm.tsx";
+import { MapProvider } from "./MapContext.tsx";
 
 function App() {
 
   //const {user} = useAuth();
 
   return (
-    <Router>
+    <MapProvider>
+      <Router>
       <Routes>
         <Route path="/login" element={<Login/>}/>
         <Route path="/register" element={<Register/>} />
@@ -63,6 +65,7 @@ function App() {
         />
       </Routes>
     </Router>
+    </MapProvider>
   );
 }
 

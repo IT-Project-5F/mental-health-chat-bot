@@ -7,6 +7,7 @@ import SuggestedActionButton from './SuggestedActionButton.tsx';
 import SuggestedQueryButton from './SuggestedQueryButton.tsx';
 import AddServiceFormModal from './modalWindows/AddServiceFormModal.tsx';
 import { request } from '../api.ts';
+import { useMap } from '../MapContext';
 
 /* Types and Interfaces */
 interface Message {
@@ -25,7 +26,9 @@ type ModalType = "addService" | "updateLocation" | null;
  * - Chat Container can be collapsed completely and expanded again. 
  * - Chat Container can be enlarged by dragging using mouse (desktop only) or touch screen (for mobile or desktop)
  */
-const ChatContainer: React.FC = () => {    
+const ChatContainer: React.FC = () => {
+  const { updateMarkers } = useMap();
+
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: 'Hello 👋, how can I help you today?\nType your query below or select a suggested action button to get started!', sender: 'chatbot' },
   ])
@@ -250,6 +253,11 @@ const ChatContainer: React.FC = () => {
             ...prev,
             { id: prev.length + 1, text: response.response, sender: 'chatbot' },
           ]);
+
+          // Update map markers if provided
+          if (response.markers && response.markers.length > 0) {
+            updateMarkers(response.markers);
+          }
         } 
         else {
           setMessages((prev: Message[]) => [
