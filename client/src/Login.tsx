@@ -1,32 +1,10 @@
 import { useNavigate, Link } from 'react-router-dom';
-<<<<<<< HEAD
-import { request } from './api';
-import { useState } from 'react';
-=======
 import { useState } from 'react';
 import { request } from './api';
->>>>>>> main
 
 function Login() {
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
-<<<<<<< HEAD
-    const [password, setPassword] = useState("")
-
-    // Example login function
-    const handleLogin = async (e: React.FormEvent) => {
-            e.preventDefault();
-
-            const formData = new URLSearchParams();
-            formData.append('username', username);
-            formData.append('password', password);
-
-            const result = await request("POST", "/api/auth/login", { username, password }, true, "form");
-            if (result.access_token) {
-                localStorage.setItem("access_token", result.access_token);
-                navigate('/admin');
-            } else {
-=======
     const [password, setPassword] = useState("");
     const [remember, setRemember] = useState(false);
 
@@ -52,13 +30,10 @@ function Login() {
             } catch (error) {
                 console.error("Login error: ", error);
                 alert("An error occurred during login. Please try again.");
->>>>>>> main
                 navigate('/login');
             }
     };
 
-<<<<<<< HEAD
-=======
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -74,7 +49,6 @@ function Login() {
         }
     }
 
->>>>>>> main
     return (
         <div className="absolute w-screen h-screen bg-[#01563E] inset-0">
             <form onSubmit={handleLogin} className="flex flex-col h-screen items-center justify-center">
@@ -82,10 +56,7 @@ function Login() {
                 <div className="flex flex-col items-start">
                     <label htmlFor="username" className="m-2 text-[#CBDB2F] font-bold hidden sm:block">Username</label>
                     <input
-<<<<<<< HEAD
-=======
                         id="username"
->>>>>>> main
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -96,10 +67,7 @@ function Login() {
                 <div className="flex flex-col items-start">
                     <label htmlFor="password" className="m-2 text-[#CBDB2F] font-bold hidden sm:block">Password</label>
                     <input
-<<<<<<< HEAD
-=======
                         id="password"
->>>>>>> main
                         type="password"
                         placeholder="Your password"
                         value={password}

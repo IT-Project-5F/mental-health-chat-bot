@@ -26,17 +26,10 @@ function App() {
                   <Portal />
               </ProtectedRoute>
           }
-<<<<<<< HEAD
-        /> */}
-        {/* TEMP - SERVICE CREATION FORM */}
-        <Route path="/service-creation" element={<ServiceCreationForm />} />
-        <Route
-=======
         />
         {/* TEMP - SERVICE CREATION FORM */}
         <Route path="/service-creation" element={<ServiceCreationForm />} />
         {/* <Route
->>>>>>> main
           path="/admin"
           element={
             <div className="bg-black">

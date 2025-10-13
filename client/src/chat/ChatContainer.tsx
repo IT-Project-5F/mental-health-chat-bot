@@ -350,17 +350,7 @@ const ChatContainer: React.FC = () => {
       </button>
       
       {/* Header */}
-      <div className="flex px-3 py-2 bg-gradient-to-r from-[#FDB4C6] to-[#62BB46] bg-[#013F2D]">
-        <h1 className="text-[#014532] text-lg font-bold ml-1">Health Navigator</h1>
-        <button 
-          className="ml-auto p-1 rounded-full hover:bg-[#215B4B] transition-transform duration-300 ease-in-out hover:scale-90"
-          onClick = {() => setIsOpen(false)}
-        >
-          {/* Close chat container button */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 30 30" fill="none">
-            <path d="M22.5 22.5L15 15M15 15L7.5 7.5M15 15L22.5 7.5M15 15L7.5 22.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+      <div className="flex px-3 py-5 bg-gradient-to-r from-[#FDB4C6] to-[#62BB46] bg-[#013F2D]">
       </div>
       
       {/* Messages */}
