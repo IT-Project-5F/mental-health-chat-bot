@@ -32,7 +32,12 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username, "role": user.role}
     )
-    return Token(access_token=access_token, token_type="bearer")
+    return Token(
+        access_token = access_token,
+        token_type = "bearer",
+        username = user.username,
+        email_address = user.email_address
+    )
 
 
 @router.post("/reset/{username}")
