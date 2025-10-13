@@ -17,13 +17,13 @@ function Portal() {
     }
 
     const pages = [
-        <Dashboard />,
+        <Dashboard onNavigate={setSelected}/>,
         <Services onEditService={handleEditService}/>,
         <Users />
     ];
 
     return (
-        <div className="grid absolute w-screen h-screen inset-0 grid-cols-[360px_1fr]">
+        <div className="grid absolute w-screen h-screen inset-0 grid-cols-[60px_1fr] sm:grid-cols-[360px_1fr]">
             <Sidebar selected={selected} setSelected={setSelected}/>
             <div className="flex-1 p-6">
                 {selectedService

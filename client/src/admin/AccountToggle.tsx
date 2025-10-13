@@ -1,17 +1,23 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-function AccountToggle() {
+type AccountProps = {
+    username: string;
+    role: string;
+    email: string;
+}
+
+function AccountToggle({username, role, email}: AccountProps) {
     return (
-        <div className="mx-4 mt-2 px-4 py-6 border-b-1">
-            <div className="flex items-center space-x-8">
-                <Avatar className="size-12 sm:size-16">
+        <div className="mb-6 p-0 sm:p-4">
+            <div className="flex items-center gap-8">
+                <Avatar className="size-8 sm:size-16">
                     <AvatarImage src="https://github.com/shadcn.png"/>
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarFallback>NA</AvatarFallback>
                 </Avatar>
                 <div className="text-left text-white overflow-x-hidden hidden sm:block">
-                    <h1 className="text-xl font-bold">John Doe</h1>
-                    <p className="text-sm">admin</p>
-                    <p className="text-sm break-words max-w-[180px]">very_very_long_email_of_johndoe@health.vic.org.au</p>
+                    <h1 className="text-lg font-bold">{username}</h1>
+                    <p className="text-sm">{role}</p>
+                    <p className="text-sm break-words">{email}</p>
                 </div>
             </div>
         </div>

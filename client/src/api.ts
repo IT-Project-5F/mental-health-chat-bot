@@ -1,5 +1,5 @@
-// Backend API
-const BaseApiURL = "http://localhost:5001";
+// Backend API - dynamic based on environment
+const BaseApiURL = import.meta.env.VITE_API_URL || "http://localhost:5001";
 
 /**
  * Helper Function that acts as a wrapper for HTTP Requests.
@@ -19,7 +19,7 @@ export const request = async(
 ) => {
 
     // Retrieve the token from local storage if it exists
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
 
     // Initialize headers and body for the fetch call
     let headers: Record<string, string> = {};

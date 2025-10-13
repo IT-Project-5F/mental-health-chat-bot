@@ -1,17 +1,27 @@
-import Services from "./Services";
-import Users from "./Users";
+import { Button } from "@/components/ui/button";
 
-function Dashboard() {
+type DashboardProps = {
+    onNavigate: (page: number) => void
+}
+
+function Dashboard( { onNavigate }: DashboardProps ) {
     return (
-        <div className="grid grid-cols-12 gap-4">
-            {/* TODO: Render Service Page */}
-            {/* <div className="col-span-12 lg:col-span-6">
-                <h1 className="m-2">Services</h1>
-                <Services />
-            </div> */}
-            <div className="col-span-12 lg:col-span-6">
-                <h1 className="m-2">Users</h1>
-                <Users pageSize={10}/>
+        <div className="flex flex-col justify-center items-center h-full gap-4">
+            <h1 className="text-4xl">Welcome back!</h1>
+            <p>Click on the buttons below to find out more about the admin portal!</p>
+            <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                    size={"xl"}
+                    onClick={() => onNavigate(1)}
+                >
+                    Services
+                </Button>
+                <Button
+                    size={"xl"}
+                    onClick={() => onNavigate(2)}
+                >
+                    Users
+                </Button>
             </div>
         </div>
     )

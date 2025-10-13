@@ -49,12 +49,11 @@ async def get_chat_history(session_id: str):
         messages=chat_sessions[session_id]["messages"]
     )
 
-@router.post("/", response_model=ChatResponse)
+@router.post("", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
     """
     Process user chat message using RAG system with conversation history
     """
-    print(request)
     try:
         # Create new session if none provided
         if not request.session_id:

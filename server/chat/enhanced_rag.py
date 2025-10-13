@@ -12,7 +12,10 @@ class EnhancedRAGWithWebSearch:
     """
 
     def __init__(self):
-        self.openai_client = openai.OpenAI()
+        self.openai_client = openai.OpenAI(
+            api_key=os.getenv("OPENROUTER_API_KEY"),
+            base_url="https://openrouter.ai/api/v1"
+        )
         self.web_search_api_key = os.getenv("SERPER_API_KEY")  # Using Serper for web search
 
     def process_with_intelligent_fallback(self, user_input: str, conversation_history: List[Dict] = None) -> str:
@@ -180,7 +183,11 @@ class EnhancedRAGWithWebSearch:
             3. Maintains a supportive, professional tone
             4. Includes resource links when appropriate
             5. Stays focused on mental health support
-
+            
+            Output requirements:
+            - Use plain text only (no Markdown, asterisks, or special formatting symbols).
+            - Use clear field labels to highlight key information (for example: ORGANISATION, ADDRESS, PHONE, EMAIL, WEBSITE, SERVICE TYPE, COST, HOURS).
+            - Keep the layout easy to scan and visually organized. 
             Response:
             """
 

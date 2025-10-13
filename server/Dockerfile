@@ -16,10 +16,6 @@ RUN apt-get update && \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Rust (needed for fastuuid)
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-
 # Upgrade pip
 RUN pip install --upgrade pip
 
@@ -36,5 +32,5 @@ COPY . .
 # Expose port (adjust if needed)
 EXPOSE 5001
 
-# Run your FastAPI app with uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001", "--reload"]
+# Run your FastAPI app with uvicorn (production mode without --reload)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5001"]

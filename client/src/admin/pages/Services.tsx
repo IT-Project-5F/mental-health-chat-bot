@@ -23,106 +23,6 @@ type ServiceProps = {
     onEditService: (service: ServiceFormData) => void
 }
 
-export const getServiceData = (onEdit: (service: ServiceFormData) => void): ColumnDef<ServiceFormData>[] => [
-    {
-        accessorKey: "service_name",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center">
-                    <span>Service</span>
-                    <ArrowUpDown
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                    />
-                </div>
-            )
-        }
-    },
-    {
-        accessorKey: "organisation_name",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center">
-                    <span>Org Name</span>
-                    <ArrowUpDown
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                    />
-                </div>
-            )
-        }
-    },
-    {
-        accessorKey: "email",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center">
-                    <span>Email</span>
-                    <ArrowUpDown
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                    />
-                </div>
-            )
-        },
-    },
-    {
-        accessorKey: "phone",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center">
-                    <span>Phone</span>
-                    <ArrowUpDown
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                    />
-                </div>
-            )
-        },
-    },
-    {
-        accessorKey: "website",
-        header: ({ column }) => {
-            return (
-                <div className="flex items-center">
-                    <span>Website</span>
-                    <ArrowUpDown
-                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-                        className="m-1 p-1 rounded-lg opacity-50 hover:opacity-100"
-                    />
-                </div>
-            )
-        },
-    },
-    {
-        id: "actions",
-        cell: ({ row }) => {
-            const service = row.original
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel><h1>Actions</h1></DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => onEdit(service)}
-                        >
-                            View
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        {/* TODO: Delete Action */}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )
-        }
-    }
-]
-
 function Services({ pageSize = 10, onEditService }: ServiceProps) {
     const [data, setData] = useState<ServiceFormData[]>([])
     const [loading, setLoading] = useState(false)
@@ -151,6 +51,131 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
         fetchServices(query.trim())
     }
 
+    const handleDeleteService = async (service_name: string, service_campus_key: string) => {
+        // Confirm before deleting service
+        const confirmDecline = window.confirm(`Are you sure you want to delete the service "${service_name}"? This action cannot be undone.`);
+        if (!confirmDecline) return;
+
+        try {
+            const result = await request("DELETE", `/api/database/${service_campus_key}`)
+            console.log('Deleted service:', result);
+            // Remove service from list
+            setData(prev => prev.filter(service => service.service_name !== service_name))
+            
+        } catch (error) {
+            console.error("Error deleting service: ", error)
+            alert("An error occurred while deleting the service. Please try again.")
+        }
+    }
+
+    // Define table columns (only displaying a few key fields for brevity)
+    const getServiceData = (onEdit: (service: ServiceFormData) => void): ColumnDef<ServiceFormData>[] => [
+        {
+            accessorKey: "service_name",
+            header: ({ column }) => {
+                return (
+                    <div className="flex items-center gap-2">
+                        <span>Service</span>
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        >
+                            <ArrowUpDown />
+                        </Button>
+                    </div>
+                )
+            },
+        },
+        {
+            accessorKey: "email",
+            header: ({ column }) => {
+                return (
+                    <div className="flex items-center">
+                        <span>Email</span>
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        >
+                            <ArrowUpDown />
+                        </Button>
+                    </div>
+                )
+            },
+        },
+        {
+            accessorKey: "phone",
+            header: ({ column }) => {
+                return (
+                    <div className="flex items-center">
+                        <span>Phone</span>
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        >
+                            <ArrowUpDown />
+                        </Button>
+                    </div>
+                )
+            },
+        },
+        {
+            accessorKey: "website",
+            header: ({ column }) => {
+                return (
+                    <div className="flex items-center">
+                        <span>Website</span>
+                        <Button
+                            variant={"ghost"}
+                            size={"icon"}
+                            className="opacity-50 hover:opacity-100 hover:border-none hover:text-[#CBDB2F]"
+                            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                        >
+                            <ArrowUpDown />
+                        </Button>
+                    </div>
+                )
+            },
+        },
+        {
+            id: "actions",
+            cell: ({ row }) => {
+                const service = row.original
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghostdark" size={"icon"}>
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="rounded-md">
+                            <DropdownMenuLabel>
+                                <h1 className="font-semibold">Actions</h1>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => onEdit(service)}
+                            >
+                                View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => {handleDeleteService(service.service_name, service.service_campus_key)}}
+                            >
+                                Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )
+            },
+        }
+    ]
+
     return (
         <div className="container mx-auto py-4">
             {/* Search bar */}
@@ -162,8 +187,8 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
                     onChange={(e) => setQuery(e.target.value)}
                 />
                 <Button
+                    variant="secondary"
                     type="submit"
-                    className="bg-[#014532] hover:bg-[#62BB46]"
                 >
                     Search
                 </Button>
