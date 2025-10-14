@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from .Schemas import UserCreate, UserResponse, UserResetPassword
 from typing import Annotated
 from users.Model import AuxillaryUser
-from users.Utils import EmailNotificationService
 import jwt
 from .Utils import get_password_hash, SECRET_KEY, ALGORITHM
 import resend
@@ -118,7 +117,7 @@ async def reset_inform(
         # Send email (using test email for development)
         r = resend.Emails.send({
             "from": "Support <onboarding@resend.dev>",
-            "to": ["leminhquan9829@gmail.com"],  # Test email for development
+            "to": ["foxtrotfive026@gmail.com"],  # Test email for development
             "subject": subject,
             "html": html,
         })
@@ -247,9 +246,27 @@ async def confirm_password_reset(
 
         # Send notification email
         if user.email_address:
-            subject, html = EmailNotificationService.get_password_reset_email()
-            if not await EmailNotificationService.send_email(user.email_address, subject, html):
-                logger.warning(f"Password updated but email notification failed for user {user.username}")
+            subject = "Your password has been reset successfully"
+            html_content = """
+                <h2>Password Reset Successful</h2>
+                <p>Hello,</p>
+                <p>Your password has been reset successfully. You can now log in with your new credentials.</p>
+                <p>If you did not request this change, please contact our support team immediately.</p>
+                <br/>
+                <p>Best regards,<br/>The Support Team</p>
+                """
+            try:
+                    resend.Emails.send({
+                        "from": "Support <onboarding@resend.dev>",
+                        "to": ["foxtrotfive026@gmail.com"],
+                        "subject": subject,
+                        "html": html_content,
+                    })
+                    logger.info(f"Email sent successfully")
+                    return True
+            except Exception as e:
+                    logger.error(f"Failed to send email : {e}")
+                    return False
 
         logger.info(f"Password updated successfully for user {user.username}")
         return user

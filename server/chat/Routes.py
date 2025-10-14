@@ -98,7 +98,6 @@ async def chat_endpoint(request: ChatRequest):
             timestamp=datetime.now().isoformat()
         )
         conversation_history.append(assistant_message.dict())
-        
         logger.info("Successfully processed chat request")
         return ChatResponse(response=response, session_id=session_id)
     
