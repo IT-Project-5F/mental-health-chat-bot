@@ -194,11 +194,10 @@ class EnhancedRAGWithWebSearch:
         Process query with automatic web search when RAG is insufficient
         """
         logger.info(f"Processing query: {user_input[:100]}...")
-        
-        from chat.rag_service import get_embeddings_vector, get_top3_similar_docs
+
         
         query_embedding = get_embeddings_vector(user_input)
-        rag_docs = get_top3_similar_docs(query_embedding, k=3)
+        rag_docs = get_topk_similar_docs(query_embedding)
         
         assessment = self.assess_rag_quality(rag_docs, user_input)
         logger.info(f"RAG Assessment: {assessment}")
@@ -235,15 +234,28 @@ class EnhancedRAGWithWebSearch:
         - RAG Confidence: {assessment['confidence']:.1%}
         - Reason for approach: {assessment['reason']}
         - Sources used: {', '.join(sources_used) if sources_used else 'none'}
-        
         Instructions:
         1. If database has specific services, prioritize those with contact details
         2. If using web information, mention it's from online sources
         3. If no good matches found, be honest and suggest alternatives
         4. Always be supportive and provide crisis resources if needed
-        """
         
-        from chat.rag_service import get_completion_from_messages
+        Output requirements:
+        - Use plain text only (no Markdown, asterisks, or special formatting symbols).
+        - Use clear field labels to highlight key information (for example: ORGANISATION, ADDRESS, PHONE, EMAIL, WEBSITE, SERVICE TYPE, COST, HOURS).
+        - Keep the layout easy to scan and visually organized.
+        - Adjust the format so that it is comprehensive and nice to the users. 
+        Example format:
+        [Drummond Street Services]
+        Address: 100 Drummond St, Carlton VIC 3053
+        Phone: 03 9663 6733
+        Email: enquiries@ds.org.au
+        Website: https://ds.org.au/
+        Service Type: Primary and specialised clinical ambulatory mental health care services; specialised mental health community support services
+        Cost: Free and paid options available
+        Hours: Standard business hours
+        """
+
         
         messages = [
             {"role": "system", "content": system_message},
@@ -255,10 +267,21 @@ class EnhancedRAGWithWebSearch:
         
         # Add source attribution if we used web
         if 'web' in sources_used and 'database' not in sources_used:
-            response += "\n\n*This information was retrieved from web sources as no specific services were found in our database. Please verify details directly with the services.*"
+            response += (
+                "\n\n⚠ CAVEAT: This information was retrieved from web sources "
+                "as no specific services were found in our database. "
+                "Please verify details directly with the services."
+            )
         elif 'web' in sources_used and 'database' in sources_used:
-            response += "\n\n*Response includes both database services and supplementary web information.*"
-            
+            response += (
+                "\n\nℹ NOTE: Response includes both database services "
+                "and supplementary web information."
+            )
+
+        logger.info(
+            f"Response generated using sources: {', '.join(sources_used)}"
+        )
+
         return response
     
     def format_rag_docs(self, docs: List[Dict]) -> str:

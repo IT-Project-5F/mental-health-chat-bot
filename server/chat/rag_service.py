@@ -82,6 +82,24 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         2. If using web information, mention it's from online sources
         3. If no good matches found, be honest and suggest alternatives
         4. Always provide crisis resources if needed (Lifeline: 13 11 14)
+        
+        
+        Output requirements:
+        - Use plain text only (no Markdown, asterisks, or special formatting symbols).
+        - Use clear field labels to highlight key information (for example: ORGANISATION, ADDRESS, PHONE, EMAIL, WEBSITE, SERVICE TYPE, COST, HOURS).
+        - Keep the layout easy to scan and visually organized.
+        - Adjust the format so that it is comprehensive and nice to the users. 
+        
+        Example format:
+        [Drummond Street Services]
+        Address: 100 Drummond St, Carlton VIC 3053
+        Phone: 03 9663 6733
+        Email: enquiries@ds.org.au
+        Website: https://ds.org.au/
+        Service Type: Primary and specialised clinical ambulatory mental health care services; specialised mental health community support services
+        Cost: Free and paid options available
+        Hours: Standard business hours
+        
         """
 
         # Build message history for context

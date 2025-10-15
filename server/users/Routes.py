@@ -130,7 +130,7 @@ async def accept_user(username: str, db: Annotated[Session, Depends(get_database
             try:
                 r = resend.Emails.send({
                     "from": "Welcome <onboarding@resend.dev>",
-                    "to": ["leminhquan9829@gmail.com"],
+                    "to": ["foxtrotfive026@gmail.com"],
                     "subject": "Welcome! Your account has been approved",
                     "html": """
                     <h2>Congratulations!</h2>
@@ -177,7 +177,7 @@ async def decline_user(username: str, db: Annotated[Session, Depends(get_databas
             try:
                 r = resend.Emails.send({
                     "from": "Sorry <onboarding@resend.dev>",
-                    "to": ["leminhquan9829@gmail.com"],
+                    "to": ["foxtrotfive026@gmail.com"],
                     "subject": "Application Update",
                     "html": """
                     <h2>Application Status Update</h2>
