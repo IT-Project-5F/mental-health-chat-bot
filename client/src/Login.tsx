@@ -20,9 +20,13 @@ function Login() {
                     if (remember) {
                         // Persist login
                         localStorage.setItem("access_token", result.access_token);
+                        localStorage.setItem("username", result.username);
+                        localStorage.setItem("email", result.email_address);
                     } else {
                         // Clears (signs out) when browser closes
                         sessionStorage.setItem("access_token", result.access_token);
+                        sessionStorage.setItem("username", result.username);
+                        sessionStorage.setItem("email", result.email_address);
                     }
                     navigate('/admin');
                 } else {
