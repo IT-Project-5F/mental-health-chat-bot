@@ -82,6 +82,9 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         2. If using web information, mention it's from online sources
         3. If no good matches found, be honest and suggest alternatives
         4. Always provide crisis resources if needed (Lifeline: 13 11 14)
+        
+        
+        
         """
 
         # Build message history for context
