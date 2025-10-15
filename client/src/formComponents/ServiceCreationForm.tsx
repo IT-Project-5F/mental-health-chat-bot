@@ -64,7 +64,7 @@ const ServiceCreationForm: React.FC = () => {
 
     /* Rendering and Styling */
     return (
-        <div className="absolute w-screen h-screen inset-0">
+        <div className="w-full h-full">
             <ServiceForm
                 mode="create"
                 onSubmit={handleSubmit}

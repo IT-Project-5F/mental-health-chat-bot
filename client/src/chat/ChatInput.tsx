@@ -40,15 +40,15 @@ const ChatInput: React.FC<ChatInputProps> = ({ sendMessage, responsePending }) =
           onChange={(e) => updateInput(e.target.value)}
           onKeyDown={handleKeyPress}
           placeholder="Type your message..."
-          className="w-full h-full p-3 pr-10 pb-10 rounded-xl bg-[#01563E] text-white placeholder-gray-300 
-                    focus:outline-none resize-none overflow-y-auto whitespace-pre-wrap"
+          className="w-full h-full p-3 pr-10 pb-10 rounded-3xl bg-[#01563E] text-white placeholder-gray-300 
+                    focus:ring-2 focus:ring-[#DCEAAB] focus:outline-none resize-none overflow-y-auto whitespace-pre-wrap"
         />
         {/* Send Button Inside Textarea */}
         <button
           onClick={handleSend}
           disabled={!sendable}
           className={`absolute bottom-3 right-3 p-2 rounded-full shadow-md items-center transition-colors duration-200 ${
-            sendable ? 'bg-white hover:bg-gray-100 cursor-pointer' : 'bg-[#D9D9D9] opacity-80 cursor-default'
+            sendable ? 'bg-white hover:bg-gray-100 hover:scale-110 cursor-pointer' : 'bg-[#D9D9D9] opacity-80 cursor-default'
           }`}
         >
           {/* Send Arrow and Loading Square animations */}

@@ -13,8 +13,7 @@ class EnhancedRAGWithWebSearch:
 
     def __init__(self):
         self.openai_client = openai.OpenAI(
-            api_key=os.getenv("OPENROUTER_API_KEY"),
-            base_url="https://openrouter.ai/api/v1"
+            api_key=os.getenv("OPENAI_API_KEY"),
         )
         self.web_search_api_key = os.getenv("SERPER_API_KEY")  # Using Serper for web search
 

@@ -1,7 +1,9 @@
 # Production Deployment Guide
 
 ## Overview
+
 Your app will be accessible at:
+
 - **Frontend**: `https://yourdomain.com`
 - **Backend API**: `https://api.yourdomain.com`
 
@@ -14,6 +16,7 @@ Your app will be accessible at:
 Commands vary by cloud provider and OS:
 
 #### AWS EC2 (Amazon Linux)
+
 SSH into your EC2 instance and run:
 
 ```bash
@@ -35,6 +38,7 @@ exit
 ```
 
 #### Azure VM (Ubuntu/Debian)
+
 SSH into your Azure VM and run:
 
 ```bash
@@ -101,30 +105,37 @@ sudo ./svc.sh status
 3. Verify the runner appears as "Idle" in your GitHub repository's Actions → Runners page
 
 ### 3. Create Traefik Network (One-time setup)
+
 ```bash
 docker network create traefik-public
 ```
 
 ### 4. Add GitHub Secrets
+
 Go to your repo → Settings → Secrets and variables → Actions
 
 Add these secrets:
+
 - `DOMAIN_STAGING` = `yourdomain.com` (your actual domain)
 - `ACME_EMAIL` = `your-email@example.com` (for SSL certificates)
 - `DOCKER_IMAGE_STAGING` = `mental-health-app` (or any name you want)
 - All other existing secrets (DATABASE_URL, JWT_SECRET, etc.)
 
 ### 5. DNS Configuration
+
 Point these DNS records to your server IP (AWS or Azure):
+
 - A record: `yourdomain.com` → `your-server-ip`
 - A record: `api.yourdomain.com` → `your-server-ip`
 
 ### 6. Deploy
+
 Push to main branch - GitHub Actions will automatically deploy
 
 ## How It Works
 
 ### Domain Routing (Traefik)
+
 - Traefik listens on ports 80 (HTTP) and 443 (HTTPS)
 - Automatically gets SSL certificates from Let's Encrypt
 - Routes traffic based on domain:
@@ -132,17 +143,22 @@ Push to main branch - GitHub Actions will automatically deploy
   - `api.yourdomain.com` → server container (port 5001)
 
 ### Environment Variables
+
 The workflow sets these automatically:
+
 - `DOMAIN` - Your domain name
 - `ENVIRONMENT=staging` - Tells the app it's in production mode
 - `FRONTEND_URL` - Set to `https://yourdomain.com` for CORS
 
 ### Client API URL
+
 - **Development**: Uses `http://localhost:5001`
 - **Production**: Built with `https://api.yourdomain.com`
 
 ## Local Development
+
 Development uses [docker-compose.dev.yml](docker-compose.dev.yml):
+
 ```bash
 docker-compose -f docker-compose.dev.yml up
 ```

@@ -9,13 +9,15 @@ import ProtectedRoute from "./ProtectedRoute.tsx";
 import Portal from "./admin/Portal.tsx"
 import QuickClose from "./QuickClose.tsx";
 import ServiceCreationForm from "./formComponents/ServiceCreationForm.tsx";
+import { MapProvider } from "./MapContext.tsx";
 
 function App() {
 
   //const {user} = useAuth();
 
   return (
-    <Router>
+    <MapProvider>
+      <Router>
       <Routes>
         <Route path="/login" element={<Login/>}/>
         <Route path="/register" element={<Register/>} />
@@ -49,20 +51,19 @@ function App() {
               <div className="absolute z-50 top-3 right-5 block sm:hidden">
                 <QuickClose/>
               </div>
-              <div className="absolute inset-0">
+              <div className="absolute inset-0 z-0">
                 <Map/>
               </div>
               {/* <div className="absolute inset-0 top-0 left-0 sm:top-10 sm:left-10">
                 <Listing/>
               </div> */}
-              <div className="absolute inset-0 left-0 sm:left-1/2 top-1/2 sm:top-0">
-                <ChatContainer/>
-              </div>
+              <ChatContainer/>
             </div>
           }
         />
       </Routes>
     </Router>
+    </MapProvider>
   );
 }
 
