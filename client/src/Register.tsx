@@ -79,16 +79,17 @@ function Register() {
                     />
                 </div>
                 <div className="m-2 sm:m-6 text-sm sm:text-lg">
-                    <Button size={"xl"}>Register</Button>
+                    <Button size={"xl"} type="submit">Register</Button>
                 </div>
                 <div className="flex text-xs sm:text-sm">
-                    <p className="mr-1 text-[#CBDB2F]">Already have an account?</p>
-                    <Link
-                        to="/login"
-                        className="text-[#CBDB2F] underline hover:text-white"
-                    >
-                        Log In
-                    </Link>
+                    <p className="mr-1 text-[#CBDB2F]">Already have an account?&nbsp;
+                        <Link
+                            to="/login"
+                            className="text-[#CBDB2F] underline hover:text-white"
+                        >
+                            Log In
+                        </Link>
+                    </p>
                 </div>
             </form>
         </div>
