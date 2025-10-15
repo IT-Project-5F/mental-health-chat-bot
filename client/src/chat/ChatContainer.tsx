@@ -455,7 +455,7 @@ const ChatContainer: React.FC = () => {
         </button>
 
         {/* Header */}
-        <div className="flex px-3 py-5 h-auto sm:h-15 bg-gradient-to-r from-[#FDB4C6] to-[#62BB46] bg-[#013F2D]"></div>
+        <div className="flex px-3 py-5 h-auto sm:h-14 bg-gradient-to-r from-[#FDB4C6] to-[#62BB46] bg-[#013F2D]"></div>
 
         {/* Messages */}
         <div

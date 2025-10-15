@@ -10,11 +10,11 @@ function Home() {
 
     return (
         <div className="w-screen flex overflow-hidden">
-            <div className="absolute z-70 fixed bottom-5 left-5">
+            <div className="absolute z-70 fixed top-3 sm:top-auto sm:bottom-5 left-5">
                 <Button
                     onClick={() => navigate("/login")}
                     variant={"secondary"}
-                    size={"xl"}
+                    size={"lg"}
                 >
                     Login
                 </Button>
