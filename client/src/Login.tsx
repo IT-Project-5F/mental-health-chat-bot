@@ -10,36 +10,36 @@ function Login() {
     const [remember, setRemember] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
-            e.preventDefault();
+        e.preventDefault();
 
-            try {
-                const result = await request("POST", "/api/auth/login", { username, password }, true, "form");
+        try {
+            const result = await request("POST", "/api/auth/login", { username, password }, true, "form");
 
-                if (result && result.access_token) {
-                    // Check if user selected "Remember"
-                    if (remember) {
-                        // Persist login
-                        localStorage.setItem("access_token", result.access_token);
-                    } else {
-                        // Clears (signs out) when browser closes
-                        sessionStorage.setItem("access_token", result.access_token);
-                    }
-                    navigate('/admin');
+            if (result && result.access_token) {
+                // Check if user selected "Remember"
+                if (remember) {
+                    // Persist login
+                    localStorage.setItem("access_token", result.access_token);
                 } else {
-                    alert("Login failed. Please check your credentials.");
+                    // Clears (signs out) when browser closes
+                    sessionStorage.setItem("access_token", result.access_token);
                 }
-            } catch (error) {
-                console.error("Login error: ", error);
-                alert("An error occurred during login. Please try again.");
-                navigate('/login');
+                navigate('/admin');
+            } else {
+                alert("Login failed. Please check your credentials.");
             }
+        } catch (error) {
+            console.error("Login error: ", error);
+            alert("An error occurred during login. Please try again.");
+            navigate('/login');
+        }
     };
 
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
         
         try {
-            const result = await request("POST", `/api/auth/reset/${username}`, { username }, true, "json");
+            const result = await request("PUT", `/api/auth/reset/${username}`, { username }, true, "json");
             if (result && result.message) {
                 alert("Password reset link sent to your email.");
             }
@@ -89,16 +89,17 @@ function Login() {
                     <a className="m-2 text-[#CBDB2F] underline hover:text-white" href="#" onClick={handlePasswordReset}>Forgot Password</a>
                 </div>
                 <div className="m-2 sm:m-6">
-                    <Button size={"xl"}>Sign In</Button>
+                    <Button size={"xl"} type="submit">Sign In</Button>
                 </div>
                 <div className="flex text-xs sm:text-sm">
-                    <p className="mr-1 text-[#CBDB2F]">Don't have an account?</p>
-                    <Link
-                        to="/register"
-                        className="text-[#CBDB2F] underline hover:text-white"
-                    >
-                        Register
-                    </Link>
+                    <p className="mr-1 text-[#CBDB2F]">Don't have an account?&nbsp;
+                        <Link
+                            to="/register"
+                            className="text-[#CBDB2F] underline hover:text-white"
+                        >
+                            Register
+                        </Link>
+                    </p>
                 </div>
             </form>
         </div>

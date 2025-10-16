@@ -7,6 +7,7 @@ import ProtectedRoute from "./ProtectedRoute.tsx";
 import Portal from "./admin/Portal.tsx"
 import ServiceCreationForm from "./formComponents/ServiceCreationForm.tsx";
 import { MapProvider } from "./MapContext.tsx";
+import PasswordReset from "./PasswordReset.tsx";
 
 function App() {
 
@@ -44,6 +45,14 @@ function App() {
             path="/"
             element={
               <Home />
+            }
+          />
+
+          {/* TEMP: password reset UI */}
+          <Route
+            path="/reset"
+            element={
+              <PasswordReset />
             }
           />
         </Routes>
