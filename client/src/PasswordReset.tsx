@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { request } from "./api";
 import { Button } from "./components/ui/button";
 
-type ResetPasswordProps = {
-    token?: string
-    username?: string
-}
-
-function PasswordReset( { token, username }: ResetPasswordProps) {
+function PasswordReset() {
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const queryParams = new URLSearchParams(location.search);
+    const token = queryParams.get("token") || "";
+    const username = queryParams.get("username") || "";
+
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -27,7 +28,7 @@ function PasswordReset( { token, username }: ResetPasswordProps) {
         setLoading(true);
 
         try {
-            const result = await request("PUT", `http://localhost:5001/api/auth/reset/confirm`, { token, username, password }, true, "json");
+            const result = await request("PUT", "/api/auth/reset/confirm", { token, username, password }, true, "json");
             if (result && result.id) {
                 setSuccess(true)
                 setTimeout(() => navigate("/login"), 2000);
