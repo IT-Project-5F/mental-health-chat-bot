@@ -1,7 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { request } from './api';
-import { Button } from './components/ui/button';
+import { request } from '@/api';
+import { Button } from '@/components/ui/button';
 
 function Register() {
     const navigate = useNavigate();

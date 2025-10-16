@@ -1,13 +1,20 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { request } from './api';
-import { Button } from './components/ui/button';
+import { request } from '@/api';
+import { Button } from '@/components/ui/button';
+import PasswordResetModal from './PasswordResetModal';
 
+/**
+ * Description:
+ * - Login page collects username and password to determine
+ */
 function Login() {
     const navigate = useNavigate();
+
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [remember, setRemember] = useState(false);
+    const [resetModal, setResetModal] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,20 +45,13 @@ function Login() {
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        try {
-            const result = await request("PUT", `/api/auth/reset/${username}`, { username }, true, "json");
-            if (result && result.message) {
-                alert("Password reset link sent to your email.");
-            }
-        } catch (error) {
-            console.error("Password reset error: ", error);
-            alert("An error occurred during password reset. Please try again.");
-            navigate('/login');
-        }
+        // Open the pop up window
+        setResetModal(true);
     }
 
     return (
         <div className="absolute w-screen h-screen bg-[#01563E] inset-0">
+            
             <form onSubmit={handleLogin} className="flex flex-col h-screen items-center justify-center">
                 <h1 className="p-6 text-3xl font-bold text-[#CBDB2F]">Login</h1>
                 <div className="flex flex-col items-start">
@@ -102,6 +102,9 @@ function Login() {
                     </p>
                 </div>
             </form>
+            {resetModal && (
+                <PasswordResetModal onClose={() => setResetModal(false)} />
+            )}
         </div>
     )
 }
