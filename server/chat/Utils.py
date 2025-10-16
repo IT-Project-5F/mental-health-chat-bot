@@ -1,8 +1,8 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from .Validator import MentalHealthModel 
+from typing import Dict, List
+import requests
 import numpy as np
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -12,25 +12,42 @@ from langchain_openai import OpenAIEmbeddings
 import openai
 from dotenv import load_dotenv
 
-load_dotenv()
 # Use OpenAI directly for chat completions
 openai_client = openai.OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
 )
 
-def get_topk_similar_docs(query_embedding, k = 5):
-    """Retrieve top k most similar documents based on cosine similarity"""
+def get_topk_similar_docs(query_embedding, k=5):
+    """Retrieve top k most similar documents with cosine similarity scores"""
     if isinstance(query_embedding, np.ndarray):
         query_embedding = query_embedding.tolist()
 
     with Session(engine) as session:
+        distance = EmbeddingStorage.embedding.cosine_distance(query_embedding)
+        # Build query
         stmt = (
-            select(EmbeddingStorage)
-            .order_by(EmbeddingStorage.embedding.cosine_distance(query_embedding))
+            select(EmbeddingStorage, distance.label("distance"))
+            .order_by(distance)
             .limit(k)
         )
-        results = session.execute(stmt).scalars().all()
-        return get_detailed_service_info(results)
+        # Execute query
+        detail_docs = session.execute(stmt).all()
+        if not detail_docs:
+            return []
+        # Batch fetch service info for all documents at once
+        docs_only = [doc for doc, _ in detail_docs]
+        services = get_detailed_service_info(docs_only)
+
+        # Build results with similarity filtering
+        results = []
+        for service, (_, dist) in zip(services, detail_docs):
+            similarity = 1 - dist
+            results.append({
+                "service": service,
+                "similarity": float(similarity)  # Ensure JSON serializable
+            })
+
+        return results
 
 def get_detailed_service_info(embedding_records):
     """Retrieve detailed service information from related tables"""
@@ -154,10 +171,9 @@ def get_completion_from_messages(messages, model="gpt-4o", temperature=0, max_to
         response = openai_client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=temperature, 
-            max_tokens=max_tokens, 
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
-       # print(response.choices[0].message.content)
         return response.choices[0].message.content
     except Exception as e:
         print(f"Error getting completion: {e}")
@@ -199,3 +215,97 @@ def get_embeddings_vector(text):
         traceback.print_exc()
         return None
 
+def check_require_web_search(user_input: str) -> bool:
+        """
+        Determine if the query needs web search based on keywords
+        """
+        web_search_indicators = [
+            "latest", "recent", "new", "current", "updated", "2024", "2025",
+            "near me", "in my area", "location", "address", "phone number",
+            "reviews", "ratings", "cost", "price", "insurance",
+            "emergency", "crisis", "urgent", "immediate help"
+        ]
+        return any(indicator in user_input.lower() for indicator in web_search_indicators)
+
+def check_mental_health_website(result: Dict) -> bool:
+    relevant_domains = {
+        "nih.gov", "nimh.nih.gov", "cdc.gov", "samhsa.gov", "psychologytoday.com",
+        "nami.org", "mentalhealth.gov", "who.int", "apa.org", "therapist.com",
+        "betterhelp.com", "talkspace.com", "psychcentral.com", "webmd.com",
+        "mayo.clinic", "clevelandclinic.org"
+    }
+
+    keywords = {
+        "mental health", "therapy", "counseling", "depression", "anxiety",
+        "psychiatr", "psycholog", "wellness", "support", "crisis", "suicide"
+    }
+
+    link = result.get("link", "").lower()
+    title = result.get("title", "").lower()
+    snippet = result.get("snippet", "").lower()
+
+    # Check if domain is relevant
+    if any(domain in link for domain in relevant_domains):
+        return True
+
+    # Check if content mentions mental health keywords
+    content = title + " " + snippet
+    if any(keyword in content for keyword in keywords):
+        return True
+    return False
+
+def process_search_results(self, search_results: Dict) -> List[Dict]:
+        """
+        Process and filter web search results for mental health relevance
+        """
+        processed_results = []
+
+        # Get organic results
+        organic_results = search_results.get("organic", [])
+
+        for result in organic_results[:3]:  # Take top 3 results
+            # Filter for mental health related sites
+            if self._is_mental_health_relevant(result):
+                processed_results.append({
+                    "title": result.get("title", ""),
+                    "snippet": result.get("snippet", ""),
+                    "link": result.get("link", ""),
+                    "source": result.get("displayLink", "")
+                })
+
+        return processed_results
+
+def web_search(query: str) -> List[Dict]:
+    """
+    Perform web search for mental health information
+    """
+    serper_web_search_keys = os.getenv("SERPER_API_KEY")
+    if not serper_web_search_keys:
+        print("No web search API key configured - skipping web search")
+        return []
+    try:
+        # Using Serper API for web search
+        url = "https://google.serper.dev/search"
+        # Enhance query for better mental health results
+        enhanced_query = f"mental health {query} services support therapy counseling"
+        payload = {
+            "q": enhanced_query,
+            "num": 5,
+            "gl": "us",  # Country
+            "hl": "en"   # Language
+        }
+        headers = {
+            "X-API-KEY": serper_web_search_keys,
+            "Content-Type": "application/json"
+        }
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        if response.status_code == 200:
+            results = response.json()
+            return process_search_results(results)
+        else:
+            print(f"Web search API error: {response.status_code}")
+            return []
+
+    except Exception as e:
+        print(f"Web search error: {e}")
+        return []
