@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { request } from "./api";
-import { Button } from "./components/ui/button";
+import { request } from "@/api";
+import { Button } from "@/components/ui/button";
 
 function PasswordReset() {
     const navigate = useNavigate();
