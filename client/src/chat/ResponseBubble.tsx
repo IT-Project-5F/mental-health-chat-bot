@@ -1,3 +1,6 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 /* Types and Interfaces */
 interface ResponseBubbleProps {
     text: string;
@@ -18,7 +21,21 @@ const ResponseBubble: React.FC<ResponseBubbleProps> = ({ text }) => {
             "
             style={{ animation: 'slideIn 0.3s ease-out forwards' }}
         >
-            <p className="whitespace-pre-wrap">{text}</p>
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                    a: ({ node, ...props }) => (
+                        <a  
+                            className="markdown-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            {...props}
+                        />
+                    ),
+                }}
+            >
+                {text}
+            </ReactMarkdown>
         </div>
     );
 };
