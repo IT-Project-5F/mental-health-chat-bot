@@ -5,8 +5,8 @@ from typing import List
 from auth.Schemas import UserResponse
 from auth.Dependencies import get_current_user, get_database, get_auxillary_user, get_user
 from auth.Utils import get_password_hash
-from .Schemas import User, UserUpdate, AdminCreate
-from .Model import User as UserModel, AuxillaryUser
+from .Schemas import User, UserUpdate, AdminCreate, AuxillaryUser
+from .Model import User as UserModel, AuxillaryUser as AuxillaryUserModel
 import resend
 import os
 from logging import getLogger
@@ -34,23 +34,24 @@ def list_users(
     return users
 
 
-@router.get("/pending", response_model=List[User])
+@router.get("/pending", response_model=List[AuxillaryUser])
 def list_pending_users(
         skip: int = 0,
-        limit: int = 0,
+        limit: int = 100,
         db: Session = Depends(get_database)
 ):
-    return db.query(AuxillaryUser).offset(skip).limit(limit).all()
+    aux_users =  db.query(AuxillaryUserModel).offset(skip).limit(limit).all()
+    return aux_users
 
 
-@router.put("/{user_id}", response_model=User)
+@router.put("/{username}", response_model=User)
 def update_user(
-        user_id: int,
+        username : str,
         user_update: UserUpdate,
         db: Session = Depends(get_database),
         current_user: UserModel = Depends(get_current_user)
 ):
-    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    user = get_user(db, username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -70,13 +71,13 @@ def update_user(
     return user
 
 
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{username}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
-        user_id: int,
+        username : str,
         db: Session = Depends(get_database),
         current_user: UserModel = Depends(get_current_user)
 ):
-    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    user = get_user(db, username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -88,7 +89,7 @@ def delete_user(
     return None
 
 
-@router.post("/accept", response_model=UserResponse)
+@router.post("/accept/{username}", response_model=UserResponse)
 async def accept_user(username: str, db: Annotated[Session, Depends(get_database)]):
     auxillary_db_user = get_auxillary_user(db, username)
     if auxillary_db_user is None:

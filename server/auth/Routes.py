@@ -39,7 +39,7 @@ async def login_for_access_token(
     )
 
 
-@router.post("/reset/{username}")
+@router.put("/reset/{username}")
 async def reset_inform(
         username: str,
         db: Annotated[Session, Depends(get_database)]
@@ -48,7 +48,6 @@ async def reset_inform(
     generic_response = {
         "message": "If the username exists and has a registered email address, a password reset link has been sent."
     }
-
     try:
         # Find user
         user = get_user(db, username)
