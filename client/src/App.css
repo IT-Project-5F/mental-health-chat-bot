@@ -40,3 +40,17 @@
 .read-the-docs {
   color: #888;
 }
+
+.markdown-link {
+  color: #0000FF;
+  text-decoration: underline;
+}
+
+.markdown-link:visited {
+  color: #800080;
+}
+
+.markdown-link:active {
+  color: #FF0000; 
+}
+

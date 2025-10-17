@@ -329,7 +329,7 @@ const ChatContainer: React.FC = () => {
         </svg>
       ),
       onAction: () => setActiveModal("addService"),
-      requiresUserToken: false, // FOR TESTING, CHANGE TO TRUE
+      requiresUserToken: true,
     },
   ];
 
