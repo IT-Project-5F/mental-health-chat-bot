@@ -4,6 +4,7 @@ from .Prompt_Generator import PromptGenerator
 from .Validator import MentalHealthModel as GuardRailModel
 from .Utils import *
 from typing import Tuple
+import logging
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def process_input_with_retrieval_continuous(user_input, conversation_history=[]) -> Tuple[str, int]:
@@ -47,15 +48,12 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         related_docs = get_topk_similar_docs(query_embedding)
 
 
-        SIMILARITY_THRESHOLD = 0.8
         # Format the service information for better readability
         formatted_services = []
         counter = 0
         for docs_tuple in related_docs:
             score = docs_tuple['similarity']
             doc = docs_tuple['service']
-            if score < SIMILARITY_THRESHOLD :
-              continue
             service_text = f"Service {counter + 1}:\n"
             counter = counter + 1
             if doc['organisation_name']:
@@ -115,6 +113,7 @@ def process_input_with_retrieval_continuous(user_input, conversation_history=[])
         user_message = PromptGenerator.generate_local_search_user_prompt(services_content, user_input)
         messages.append({"role": "user", "content": user_message})
         final_response = get_completion_from_messages(messages)
+        logging.info(f"Number of formatted services: {len(formatted_services)}")
         return final_response, len(formatted_services)
 
     except Exception as e:
@@ -153,15 +152,20 @@ def process_with_intelligent_fallback(user_input: str, conversation_history: Lis
     try:
         # First try local RAG
         local_response, num_related_docs = process_input_with_retrieval_continuous(user_input, conversation_history)
+        logging.info(f"Number of document retrieved : {num_related_docs}")
         if num_related_docs == -1:
             return local_response
         if num_related_docs >= RELATED_DOCUMENTS_THRESHOLD:
             return local_response
-        if check_require_web_search(user_input):
-            web_results = web_search(user_input)
-            if web_results:
-                enhanced_response = combine_local_and_web(local_response, web_results, user_input)
-                return enhanced_response
+        logging.info(f"Attempting web search")
+        logging.info(f"Find web search")
+        web_results = web_search(user_input)
+        if web_results:
+            logging.info(f"RAG successfully calls LLM with web search and get a response for user {user_input}")
+            enhanced_response = combine_local_and_web(local_response, web_results, user_input)
+            return enhanced_response
+        logging.info(f"RAG successfully calls LLM but cannot find matches result from web search "
+                     f"and get a response for user {user_input}")
         return local_response
 
     except Exception as e:

@@ -1,3 +1,4 @@
+import logging
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -12,6 +13,8 @@ from langchain_openai import OpenAIEmbeddings
 import openai
 from dotenv import load_dotenv
 
+load_dotenv()
+
 # Use OpenAI directly for chat completions
 openai_client = openai.OpenAI(
     api_key=os.getenv("OPENAI_API_KEY")
@@ -21,7 +24,7 @@ def get_topk_similar_docs(query_embedding, k=5):
     """Retrieve top k most similar documents with cosine similarity scores"""
     if isinstance(query_embedding, np.ndarray):
         query_embedding = query_embedding.tolist()
-
+    SIMILARITY_THRESHOLD = 0.5
     with Session(engine) as session:
         distance = EmbeddingStorage.embedding.cosine_distance(query_embedding)
         # Build query
@@ -42,6 +45,8 @@ def get_topk_similar_docs(query_embedding, k=5):
         results = []
         for service, (_, dist) in zip(services, detail_docs):
             similarity = 1 - dist
+            if SIMILARITY_THRESHOLD > similarity :
+                continue
             results.append({
                 "service": service,
                 "similarity": float(similarity)  # Ensure JSON serializable
@@ -182,7 +187,6 @@ def get_completion_from_messages(messages, model="gpt-4o", temperature=0, max_to
 def get_embeddings_vector(text):
     """Get embeddings vector for text - tries OpenAI first, falls back to OpenRouter"""
     try:
-        import requests
 
         # Try OpenAI first (works from most regions, cheaper)
         headers = {
@@ -254,7 +258,7 @@ def check_mental_health_website(result: Dict) -> bool:
         return True
     return False
 
-def process_search_results(self, search_results: Dict) -> List[Dict]:
+def process_search_results(search_results: Dict) -> List[Dict]:
         """
         Process and filter web search results for mental health relevance
         """
@@ -265,7 +269,7 @@ def process_search_results(self, search_results: Dict) -> List[Dict]:
 
         for result in organic_results[:3]:  # Take top 3 results
             # Filter for mental health related sites
-            if self._is_mental_health_relevant(result):
+            if check_mental_health_website(result):
                 processed_results.append({
                     "title": result.get("title", ""),
                     "snippet": result.get("snippet", ""),
@@ -281,7 +285,7 @@ def web_search(query: str) -> List[Dict]:
     """
     serper_web_search_keys = os.getenv("SERPER_API_KEY")
     if not serper_web_search_keys:
-        print("No web search API key configured - skipping web search")
+        logging.info("No web search API key configured - skipping web search")
         return []
     try:
         # Using Serper API for web search
@@ -298,6 +302,7 @@ def web_search(query: str) -> List[Dict]:
             "X-API-KEY": serper_web_search_keys,
             "Content-Type": "application/json"
         }
+        logging.info("Chatbot commencing web search")
         response = requests.post(url, json=payload, headers=headers, timeout=10)
         if response.status_code == 200:
             results = response.json()
