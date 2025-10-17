@@ -43,7 +43,7 @@ class MentalHealthModel:
     def _load_trigger_words(self) -> Dict[str, List[str]]:
         try:
             current_dir = os.path.dirname(__file__)
-            json_path = os.path.join(current_dir, "trigger_words.json")
+            json_path = os.path.join(current_dir, "Trigger_Words.json")
 
             with open(json_path, "r", encoding="utf-8") as file:
                 word_list = json.load(file)
@@ -198,21 +198,19 @@ class MentalHealthModel:
             region, self.emergency_contacts["australia"]
         )
 
-        return f"""
-            ⚠️ I'm concerned about what you've shared. You don't have to face this alone.
-            **Immediate Help Available:**
-            • Crisis Line: {contacts.get('lifeline', contacts.get('suicide_prevention', 'Contact local emergency services'))}
-            • Text Support: {contacts.get('crisis_text', 'Available in your region')}
-            • Emergency: {contacts.get('emergency', '911/999/000')}
+        return f"""I'm concerned about what you've shared. You don't have to face this alone.
 
-            **Remember:**
-            • These feelings can change
-            • Help is available 24/7
-            • You matter and your life has value
-            • Speaking to a counselor can provide immediate relief
+IMMEDIATE HELP AVAILABLE:
 
-            Please reach out to a trusted friend, family member, or healthcare provider right now. If you're in immediate danger, please contact emergency services.
-        """
+Crisis Line: {contacts.get('lifeline', contacts.get('suicide_prevention', 'Contact local emergency services'))}
+Text Support: {contacts.get('crisis_text', 'Available in your region')}
+Emergency: {contacts.get('emergency', '911/999/000')}
+
+REMEMBER:
+
+These feelings can change. Help is available 24/7. You matter and your life has value. Speaking to a counselor can provide immediate relief.
+
+Please reach out to a trusted friend, family member, or healthcare provider right now. If you're in immediate danger, please contact emergency services."""
 
     def _violence_response(self, region: str = "australia") -> str:
         """Response for violence/harm to others triggers"""
@@ -220,29 +218,30 @@ class MentalHealthModel:
             region, self.emergency_contacts["australia"]
         )
 
-        return f"""
-            I understand you might be feeling angry or frustrated, but I cannot provide guidance on harmful actions toward others.
-            **If you're having thoughts of harming others:**
-            • Contact a mental health professional immediately
-            • Call crisis support: {contacts.get('lifeline', 'local crisis line')}
-            • Emergency services: {contacts.get('emergency', 'local emergency number')}
+        return f"""I understand you might be feeling angry or frustrated, but I cannot provide guidance on harmful actions toward others.
 
-            **Healthy ways to manage anger:**
-            • Take deep breaths or count to ten
-            • Physical exercise or go for a walk
-            • Talk to a trusted friend or counselor
-            • Write down your feelings
+IF YOU'RE HAVING THOUGHTS OF HARMING OTHERS:
 
-            Professional support can help you work through these feelings constructively.
-        """
+Contact a mental health professional immediately
+Call crisis support: {contacts.get('lifeline', 'local crisis line')}
+Emergency services: {contacts.get('emergency', 'local emergency number')}
+
+HEALTHY WAYS TO MANAGE ANGER:
+
+Take deep breaths or count to ten
+Physical exercise or go for a walk
+Talk to a trusted friend or counselor
+Write down your feelings
+
+Professional support can help you work through these feelings constructively."""
 
     def _profanity_response(self, region: str = "australia") -> str:
         """Response for profanity/harmful language triggers"""
-        return """
-                I understand you might be frustrated or upset. It's okay to feel this way, and I'm here to help.
-                Let's focus on what's bothering you and how we can work through it together. Sometimes talking about difficult feelings can help us understand them better.
-                Would you like to share what's on your mind? I'm here to listen and support you.
-            """
+        return """I understand you might be frustrated or upset. It's okay to feel this way, and I'm here to help.
+
+Let's focus on what's bothering you and how we can work through it together. Sometimes talking about difficult feelings can help us understand them better.
+
+Would you like to share what's on your mind? I'm here to listen and support you."""
 
     def _substance_response(self, region: str = "australia") -> str:
         """Response for substance abuse triggers"""
@@ -251,26 +250,26 @@ class MentalHealthModel:
         )
 
         aus_specific = (
-            """• Alcohol & Drug Information Service: 1800 250 015
-               • DirectLine: 1800 888 236 (24/7)
-            """
+            """Alcohol & Drug Information Service: 1800 250 015
+DirectLine: 1800 888 236 (24/7)"""
             if region == "australia"
-            else "• Contact your local substance abuse helpline"
+            else "Contact your local substance abuse helpline"
         )
 
-        return f"""
-            Substance use can significantly impact mental health and wellbeing. You don't have to handle this alone.
-            **Support Resources:**
-            {aus_specific}
-            • Crisis Support: {contacts.get('lifeline', 'local crisis line')}
+        return f"""Substance use can significantly impact mental health and wellbeing. You don't have to handle this alone.
 
-            **Consider:**
-            • Speaking with a healthcare provider about treatment options
-            • Joining a support group
-            • Talking to a counselor who specializes in addiction
+SUPPORT RESOURCES:
 
-            Recovery is possible, and seeking help is a sign of strength. Many people have successfully overcome substance challenges with proper support.
-            """
+{aus_specific}
+Crisis Support: {contacts.get('lifeline', 'local crisis line')}
+
+CONSIDER:
+
+Speaking with a healthcare provider about treatment options
+Joining a support group
+Talking to a counselor who specializes in addiction
+
+Recovery is possible, and seeking help is a sign of strength. Many people have successfully overcome substance challenges with proper support."""
 
     def _crisis_response(self, region: str = "australia") -> str:
         """Response for immediate crisis situations"""
@@ -278,18 +277,17 @@ class MentalHealthModel:
             region, self.emergency_contacts["australia"]
         )
 
-        return f"""
-            🚨 I can see you're in crisis right now. Please get immediate help:
-            **Contact Now:**
-            • Crisis Line: {contacts.get('lifeline', 'local crisis line')} (24/7)
-            • Emergency: {contacts.get('emergency', 'local emergency number')}
-            • Text Crisis Support: {contacts.get('crisis_text', 'available in your region')}
+        return f"""I can see you're in crisis right now. Please get immediate help:
 
-            **If you're in immediate physical danger, call emergency services right away.**
+CONTACT NOW:
 
-            You don't have to go through this alone. Crisis counselors are trained to help people in exactly your situation.
-            Please reach out to one of these services right now.
-        """
+Crisis Line: {contacts.get('lifeline', 'local crisis line')} (24/7)
+Emergency: {contacts.get('emergency', 'local emergency number')}
+Text Crisis Support: {contacts.get('crisis_text', 'available in your region')}
+
+If you're in immediate physical danger, call emergency services right away.
+
+You don't have to go through this alone. Crisis counselors are trained to help people in exactly your situation. Please reach out to one of these services right now."""
 
     def _default_response(self, region: str = "australia") -> str:
         """Default response for unrecognized categories"""
@@ -297,14 +295,12 @@ class MentalHealthModel:
             region, self.emergency_contacts["australia"]
         )
 
-        return f"""
-            I understand you're going through something difficult right now.
-            **Support is available:**
-            • Talk to someone: {contacts.get('lifeline', 'local crisis line')}
-            • Professional help: Consider speaking with a counselor or therapist
-            • Trusted support: Reach out to friends, family, or community
-            Remember that seeking help is a positive step, and you don't have to face challenges alone.
-        """
+        return f"""I understand you're going through something difficult right now.
 
+SUPPORT IS AVAILABLE:
 
+Talk to someone: {contacts.get('lifeline', 'local crisis line')}
+Professional help: Consider speaking with a counselor or therapist
+Trusted support: Reach out to friends, family, or community
 
+Remember that seeking help is a positive step, and you don't have to face challenges alone."""

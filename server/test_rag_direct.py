@@ -8,7 +8,8 @@ import os
 sys.path.append('/app')
 
 try:
-    from chat.Rag_service import get_top3_similar_docs, get_embeddings_vector, process_input_with_retrieval_continuous
+    from chat.Utils import get_topk_similar_docs, get_embeddings_vector
+    from chat.RAG_Service import process_input_with_retrieval_continuous
 
     print("=== Testing New Normalized Database RAG System ===\n")
 
@@ -25,12 +26,11 @@ try:
 
     # Test 2: Get similar services
     print("\n--- Testing Similar Services Retrieval ---")
-    similar_docs = get_top3_similar_docs(embedding)
-
+    similar_docs = get_topk_similar_docs(embedding)
     if similar_docs:
         print(f"✓ Retrieved {len(similar_docs)} similar services")
-
-        for i, doc in enumerate(similar_docs, 1):
+        for i, doc_tuple in enumerate(similar_docs, 1):
+            doc = doc_tuple['service']
             print(f"\nService {i}:")
             print(f"  Organisation: {doc.get('organisation_name', 'N/A')}")
             print(f"  Service: {doc.get('service_name', 'N/A')}")

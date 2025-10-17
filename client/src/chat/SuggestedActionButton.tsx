@@ -8,7 +8,7 @@ interface SuggestedActionButtonProps {
     requiresUserToken: boolean; // False if action is available to all users, True if only available to verified healthcare accounts
 }
 
-const SuggestedActionButton: React.FC<SuggestedActionButtonProps> = ({ text, icon, onAction, requiresUserToken }) => {
+const SuggestedActionButton: React.FC<SuggestedActionButtonProps> = ({ text, icon, onAction }) => {
     return (
         <button
             onClick={onAction} 

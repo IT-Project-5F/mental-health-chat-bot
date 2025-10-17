@@ -2,6 +2,8 @@
 
 An intelligent RAG (Retrieval-Augmented Generation) chatbot system for mental health services information with **continuous conversation support**. Built with React frontend, FastAPI backend, PostgreSQL database with pgvector for semantic search, and OpenAI integration.
 
+🌐 **Live Demo**: [mch-staging.mooo.com](https://mch-staging.mooo.com)
+
 ## ✨ Features
 
 - 🤖 **Continuous Conversations**: Maintain context across multiple messages

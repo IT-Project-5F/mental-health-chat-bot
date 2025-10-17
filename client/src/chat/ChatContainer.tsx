@@ -257,7 +257,7 @@ const ChatContainer: React.FC = () => {
         body.session_id = sessionID;
       }
 
-      const response = await request("POST", "/api/chat", body);
+      const response = await request("POST", "/api/chat/", body);
 
       // Minimum typing animation is 1000ms
       const elapsed = Date.now() - start;
