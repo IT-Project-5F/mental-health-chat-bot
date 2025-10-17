@@ -89,7 +89,7 @@ async def chat_endpoint(request: ChatRequest):
         conversation_history.append(user_message.dict())
 
         # Get similar documents for geocoding
-        tuple_related_docs = get_topk_similar_docs(get_embeddings_vector(request.message), k=3)
+        tuple_related_docs = get_topk_similar_docs(get_embeddings_vector(request.message), k=5)
         related_docs = []
         for document in tuple_related_docs :
            related_docs.append(document['service'])

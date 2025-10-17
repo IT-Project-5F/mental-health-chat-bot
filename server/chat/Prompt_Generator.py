@@ -106,16 +106,22 @@ class PromptGenerator:
     def generate_local_search_user_prompt(services_content: str, user_input: str) -> str:
         delimiter = "```"
         return f"""
+              You are a supportive mental health assistant. Use the following information to provide a clear, accurate, and compassionate response.
+
                 User Question:
-                {delimiter}{user_input}{delimiter}
-                
+                {user_input}
+
                 Relevant Mental Health Services Information:
                 {services_content}
 
-                Please provide a clear, supportive, and accurate response based on the above. 
-                If the services do not exactly match the user’s needs, provide general guidance and suggest contacting 
-                the services directly or looking for more specific resources. Strictly adhere to the output requirements 
-                in the system prompt.
+                Instructions for your response:
+                1. Include **all of the services content** exactly as provided in {services_content}. Do not omit any service or detail.
+                2. Provide a clear and supportive explanation or guidance based on the user’s question.
+                3. If the services do not exactly match the user’s needs, acknowledge that and suggest contacting the services directly or looking for more specific resources.
+                4. Use friendly, encouraging, and empathetic language. Avoid making assumptions about the user’s situation.
+
+                Response:
+
                 """
 
     @staticmethod
