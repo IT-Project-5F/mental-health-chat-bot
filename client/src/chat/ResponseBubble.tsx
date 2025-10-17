@@ -6,7 +6,14 @@ interface ResponseBubbleProps {
     text: string;
 }
 
+/* Format headings and fields */
+const formatResponse = (text: string) => {
+    return text.replace(/\[(.*?)\]/g, (_, p1) => `# ${p1}`);
+}
+
 const ResponseBubble: React.FC<ResponseBubbleProps> = ({ text }) => {
+    const formattedResponse = formatResponse(text);
+    
     return (
         <div className="
             max-w-[80%]
@@ -32,9 +39,30 @@ const ResponseBubble: React.FC<ResponseBubbleProps> = ({ text }) => {
                             {...props}
                         />
                     ),
+                    h1: ({ node, ...props }) => (
+                        <div>
+                        {/* Line separator before heading 1 */}
+                        <hr className="border-t border-white/40 my-3" />
+                        <h1
+                            className="text-lg font-bold mb-1"
+                            style={{ color: "#DCEAAB" }}
+                            {...props}
+                        />
+                        </div>
+                    ),
+                    p: ({ node, ...props }) => (
+                        <p
+                        style={{
+                            whiteSpace: "pre-wrap",
+                            marginBottom: "1.25rem"
+                        }}
+                        >
+                        {props.children}
+                        </p>
+                    ),
                 }}
             >
-                {text}
+                {formattedResponse}
             </ReactMarkdown>
         </div>
     );
