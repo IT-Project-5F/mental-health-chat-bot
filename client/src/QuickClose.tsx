@@ -1,13 +1,16 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./components/ui/button";
 
 function QuickClose () {
+    const navigate = useNavigate();
     return (
-        <Link
-            to="https://www.google.com/"
-            className="flex items-center justify-center mx-2 px-4 sm:px-10 py-2 text-md sm:text-lg font-semibold text-[#01563E] no-underline bg-[#FDB4C6] rounded-3xl hover:bg-[#FFDBE4]"
-            >
-                Quick Close
-        </Link>
+        <Button
+            onClick={() => navigate("https://www.google.com/")}
+            variant={"destructive"}
+            size={"lg"}
+        >
+            Quick Close
+        </Button>
     )
 }
 

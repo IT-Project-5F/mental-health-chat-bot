@@ -43,7 +43,7 @@ class MentalHealthModel:
     def _load_trigger_words(self) -> Dict[str, List[str]]:
         try:
             current_dir = os.path.dirname(__file__)
-            json_path = os.path.join(current_dir, "trigger_words.json")
+            json_path = os.path.join(current_dir, "Trigger_Words.json")
 
             with open(json_path, "r", encoding="utf-8") as file:
                 word_list = json.load(file)

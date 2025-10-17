@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from .rag_service import process_input_with_retrieval_continuous
+from .RAG_Service import process_with_intelligent_fallback
 from .Utils import get_topk_similar_docs, get_embeddings_vector
 from guardrails import Guard
 from .Model import *
@@ -89,10 +89,13 @@ async def chat_endpoint(request: ChatRequest):
         conversation_history.append(user_message.dict())
 
         # Get similar documents for geocoding
-        related_docs = get_topk_similar_docs(get_embeddings_vector(request.message), k=3)
+        tuple_related_docs = get_topk_similar_docs(get_embeddings_vector(request.message), k=5)
+        related_docs = []
+        for document in tuple_related_docs :
+           related_docs.append(document['service'])
 
         # Process the message with RAG and conversation context
-        response = process_input_with_retrieval_continuous(
+        response = process_with_intelligent_fallback(
             request.message,
             [{"role": msg["role"], "content": msg["content"]} for msg in conversation_history[:-1]]
         )
