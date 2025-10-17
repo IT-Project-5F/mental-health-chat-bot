@@ -25,6 +25,7 @@ jobs:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      SERPER_API_KEY: ${{ secrets.SERPER_API_KEY }}
 
     steps:
       - name: Clean workspace
