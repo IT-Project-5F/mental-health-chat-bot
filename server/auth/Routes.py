@@ -1,3 +1,4 @@
+from aiohttp import payload_type
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from .Dependencies import get_database, authenticate_user, create_access_token, get_user, get_auxillary_user
@@ -98,10 +99,9 @@ async def reset_inform(
         user.reset_token = reset_token
         db.commit()
         db.refresh(user)
-
         # Email content
         subject = "Reset password instructions"
-        reset_url = f"http://localhost:3000/reset?token={reset_token}"
+        reset_url = f"http://localhost:5174/reset?token={reset_token}"
         html = f"""
         <h2>Password Reset Request</h2>
         <p>Hello {user.username},</p>
@@ -178,7 +178,7 @@ async def signup(user: UserCreate, db: Annotated[Session, Depends(get_database)]
         )
 
 
-@router.put("/reset/confirm", response_model=UserResponse)
+@router.put("/confirm_reset", response_model=UserResponse)
 async def confirm_password_reset(
         password_reset_details: UserResetPassword,
         db: Annotated[Session, Depends(get_database)]
@@ -192,7 +192,7 @@ async def confirm_password_reset(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token not included"
             )
-
+       # logger.info(f"Token : {token}")
         username = password_reset_details.username
         if not username:
             raise HTTPException(
@@ -212,7 +212,7 @@ async def confirm_password_reset(
             payload = jwt.decode(
                 token,
                 SECRET_KEY,
-                algorithm = ALGORITHM
+                algorithms=[ALGORITHM]
             )
             token_username = payload.get("username")
             if token_username != username:
@@ -220,12 +220,11 @@ async def confirm_password_reset(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Token does not match username"
                 )
-        except jwt.InvalidTokenError:
+        except jwt.InvalidTokenError as e:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid or expired reset token"
             )
-
         # Get user from database
         user = get_user(db, username)
         if not user:
@@ -266,10 +265,10 @@ async def confirm_password_reset(
                         "html": html_content,
                     })
                     logger.info(f"Email sent successfully")
-                    return True
+                    return user
             except Exception as e:
                     logger.error(f"Failed to send email : {e}")
-                    return False
+                    return user
 
         logger.info(f"Password updated successfully for user {user.username}")
         return user
