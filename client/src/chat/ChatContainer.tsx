@@ -304,11 +304,16 @@ const ChatContainer: React.FC = () => {
   /********************************************************************************/
   /* Suggested Query and Suggested Action Buttons */
   const suggestedQueries = [
-    { text: "Find health services and clinics with short wait times" },
+    { text: "Find mental health services in Melbourne" },
+    { text: "Find mental health clinics in Victoria" },
+    { text: "Tell me more about The Melbourne Clinic" },
+    { text: "Tell me more about The University of Melbourne Psychology Clinic" },
+    { text: "Tell me more about the Melbourne Health Pyschology Centre" },
     { text: "What online health services are available?" },
+    { text: "Tell me more about the organisation Your Health in Mind" },
+    { text: "Tell me more about the organisation Access Health Online" },
     { text: "See services available after hours or on weekends" },
     { text: "Find services that don't require a GP referral" },
-    { text: "Explore free or low-cost health services" },
   ];
   const suggestedActions = [
     {
@@ -391,7 +396,18 @@ const ChatContainer: React.FC = () => {
     <>
       {/* Modal Windows - Rendered when Suggested Action Buttons are Clicked */}
       {activeModal === "addService" && (
-        <AddServiceFormModal onClose={() => setActiveModal(null)} />
+        <AddServiceFormModal 
+          onClose={() => setActiveModal(null)} 
+          onSuccess={() => {
+            // Close modal window
+            setActiveModal(null);
+            // Add chatbot message to indicate successful submission of service
+            setMessages(prev => [
+              ...prev,
+              { id: prev.length + 1, text: "New service was successfully submitted. ", sender: "chatbot" }
+            ]);
+          }}
+        />
       )}
 
       <div
@@ -503,7 +519,7 @@ const ChatContainer: React.FC = () => {
             {/* Conditional Rendering - Scroll to Bottom Arrow */}
             {showScrollToBottomArrow && (
               <div
-                className={`sticky bottom-4 w-full flex justify-center z-50 pointer-events-none"`}
+                className={`sticky bottom-4 w-full flex justify-center z-50 pointer-events-none`}
               >
                 <button
                   onClick={handleScrollToBottom}
