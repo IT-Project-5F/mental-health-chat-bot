@@ -15,9 +15,12 @@ function Login() {
     const [password, setPassword] = useState("");
     const [remember, setRemember] = useState(false);
     const [resetModal, setResetModal] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        setLoading(true);
 
         try {
             const result = await request("POST", "/api/auth/login", { username, password }, true, "form");
@@ -36,10 +39,9 @@ function Login() {
                     sessionStorage.setItem("email", result.email_address);
                 }
                 if (result.role == "admin") {
-                    navigate('/admin');
+                    setTimeout(() => navigate("/admin"), 2000);
                 } else {
-                    alert("Login success");
-                    navigate('/');
+                    setTimeout(() => navigate("/"), 2000);
                 }
             } else {
                 alert("Login failed. Please check your credentials.");
@@ -98,7 +100,9 @@ function Login() {
                     <a className="m-2 text-[#CBDB2F] underline hover:text-white" href="#" onClick={handlePasswordReset}>Forgot Password</a>
                 </div>
                 <div className="m-2 sm:m-6">
-                    <Button size={"xl"} type="submit">Sign In</Button>
+                    <Button size={"xl"} type="submit" disabled={loading}>
+                        {loading ? "Signing In..." : "Sign In"}
+                    </Button>
                 </div>
                 <div className="flex text-xs sm:text-sm">
                     <p className="mr-1 text-[#CBDB2F]">Don't have an account?&nbsp;

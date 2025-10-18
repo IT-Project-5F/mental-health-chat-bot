@@ -28,7 +28,7 @@ function PasswordReset() {
         setLoading(true);
 
         try {
-            const result = await request("PUT", "/api/auth/reset/confirm", { token, username, new_password }, true, "json");
+            const result = await request("PUT", "/api/auth/confirm_reset", { token, username, new_password }, true, "json");
             if (result && result.id) {
                 setSuccess(true)
                 setTimeout(() => navigate("/login"), 2000);

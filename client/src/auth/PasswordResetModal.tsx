@@ -13,7 +13,6 @@ function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
-    // const [errorMsg, setErrorMsg] = useState<string | null>(null);
     
     const handleClose = () => {
         const confirmClose = window.confirm("Exiting now will discard all form progress. Are you sure you want to exit?");
@@ -34,11 +33,10 @@ function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
         
         try {
             const result = await request("PUT", `/api/auth/reset/${username}`, { username }, true, "json");
-            if (result && result.success) {
-                setSuccess(true);
-            } else {
+            if (result && result.requestError) {
                 setError(true);
-                // setErrorMsg(result.message);
+            } else {
+                setSuccess(true);
             }
         } catch (error) {
             console.error("Password reset error: ", error);
@@ -69,7 +67,6 @@ function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
                 <form onSubmit={handlePasswordReset} className="flex flex-col h-screen items-center justify-center bg-[#01563E]">
                     { error ? (
                         <p className="my-1 mr-1 text-red-300">
-                            {/* Error: {errorMsg} */}
                             Password reset failed. Please try again.
                         </p>
                     ) : success ? (

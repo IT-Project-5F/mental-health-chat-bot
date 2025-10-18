@@ -178,7 +178,7 @@ async def signup(user: UserCreate, db: Annotated[Session, Depends(get_database)]
         )
 
 
-@router.put("/reset/confirm", response_model=UserResponse)
+@router.put("/confirm_reset", response_model=UserResponse)
 async def confirm_password_reset(
         password_reset_details: UserResetPassword,
         db: Annotated[Session, Depends(get_database)]
