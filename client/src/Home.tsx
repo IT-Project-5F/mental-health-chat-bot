@@ -11,6 +11,8 @@ function Home() {
     const [loggedIn, setLoggedIn] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    console.log(sessionStorage.getItem("access_token"));
+    console.log(localStorage.getItem("access_token"));
     useEffect(() => {
         if (localStorage.getItem("access_token") || sessionStorage.getItem("access_token")) {
             setLoggedIn(true);
@@ -28,9 +30,9 @@ function Home() {
                 localStorage.removeItem("username");
             }
             if (sessionStorage.getItem("access_token")) {
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("email_address");
-                localStorage.removeItem("username");
+                sessionStorage.removeItem("access_token");
+                sessionStorage.removeItem("email_address");
+                sessionStorage.removeItem("username");
             }
 
             setLoading(false);
@@ -39,6 +41,7 @@ function Home() {
     };
 
     return (
+        
         <div className="w-screen flex overflow-hidden">
             <div className="absolute z-70 fixed top-3 sm:top-auto sm:bottom-5 left-5">
                 { loggedIn ? (
