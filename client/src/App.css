@@ -42,15 +42,21 @@
 }
 
 .markdown-link {
-  color: #0000FF;
+  color: #9ccdff;
   text-decoration: underline;
 }
 
 .markdown-link:visited {
-  color: #800080;
+  color: #e0b2ff;
 }
 
 .markdown-link:active {
-  color: #FF0000; 
+  color: #ffa0a0; 
 }
+
+.markdown-link:hover {
+  color: #a2ff83;
+}
+
+
 

@@ -202,12 +202,14 @@ class MentalHealthModel:
 
         
 ### Immediate Help Available:
+
 - **Crisis Line:** {contacts.get('lifeline', contacts.get('suicide_prevention', 'Contact local emergency services'))}  
 - **Text Support:** {contacts.get('crisis_text', 'Available in your region')}  
 - **Emergency:** {contacts.get('emergency', '911/999/000')}
 
 
 ### Remember:
+
 These feelings can change. Help is available 24/7. You matter and your life has value. Speaking to a counselor can provide immediate relief.
 
 
@@ -226,12 +228,14 @@ If you're in immediate danger, please contact emergency services.
 
         
 ### If you're having thoughts of harming others:
+
 - **Contact a mental health professional immediately**
 - **Call crisis support:** {contacts.get('lifeline', 'local crisis line')}  
 - **Emergency services:** {contacts.get('emergency', 'local emergency number')}
 
 
-### Healthy Ways to Manage Anger:
+### Healthy ways to manage anger:
+
 - Take deep breaths or count to ten
 - Physical exercise or go for a walk
 - Talk to a trusted friend or counselor

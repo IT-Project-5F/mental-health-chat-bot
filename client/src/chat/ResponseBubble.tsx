@@ -39,36 +39,39 @@ const ResponseBubble: React.FC<ResponseBubbleProps> = ({ text }) => {
                             {...props}
                         />
                     ),
+                    ul: ({ node, ...props }) => (
+                        <ul className="list-disc pl-5 mb-4" {...props} />
+                    ),
+                    li: ({ node, ...props }) => (
+                        <li style={{ marginBottom: "0.5rem" }} {...props} />
+                    ),
                     h1: ({ node, ...props }) => (
                         <div>
                         {/* Line separator before heading 1 */}
                         <hr className="border-t border-white/40 my-3" />
                         <h1
                             className="text-xl font-bold mb-1"
-                            style={{ color: "#DCEAAB" }}
+                            style={{ color: "#CBDB2F" }}
                             {...props}
                         />
                         </div>
                     ),
                     h3: ({ node, ...props }) => (
-                        <div>
-                            <hr className="border-t border-white/40 my-3" />
-                            <h3
-                                className="text-lg font-bold mb-1"
-                                style={{ color: "#DCEAAB" }}
-                                {...props}
-                            />
-                        </div>
+                        <h3
+                            className="text-lg font-bold mb-1"
+                            style={{ color: "#FDB4C6", marginTop: "1rem" }}
+                            {...props}
+                        />
                     ),
-                    p: ({ node, ...props }) => (
-                        <p
-                        style={{
-                            whiteSpace: "pre-wrap",
-                            marginBottom: "1.25rem"
-                        }}
-                        >
-                        {props.children}
+                     p: ({ node, ...props }) => (
+                        <p style={{ color: "#FFFFFF", marginBottom: "1.25rem" }}>
+                            {props.children}
                         </p>
+                    ),
+                    strong: ({ node, ...props }) => (
+                        <strong style={{ color: "#deecbe", fontWeight: 700 }}>
+                            {props.children}
+                        </strong>
                     ),
                 }}
             >
