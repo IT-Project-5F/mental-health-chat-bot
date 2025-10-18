@@ -44,10 +44,20 @@ const ResponseBubble: React.FC<ResponseBubbleProps> = ({ text }) => {
                         {/* Line separator before heading 1 */}
                         <hr className="border-t border-white/40 my-3" />
                         <h1
-                            className="text-lg font-bold mb-1"
+                            className="text-xl font-bold mb-1"
                             style={{ color: "#DCEAAB" }}
                             {...props}
                         />
+                        </div>
+                    ),
+                    h3: ({ node, ...props }) => (
+                        <div>
+                            <hr className="border-t border-white/40 my-3" />
+                            <h3
+                                className="text-lg font-bold mb-1"
+                                style={{ color: "#DCEAAB" }}
+                                {...props}
+                            />
                         </div>
                     ),
                     p: ({ node, ...props }) => (
