@@ -6,7 +6,14 @@ interface ResponseBubbleProps {
     text: string;
 }
 
+/* Format headings and fields */
+const formatResponse = (text: string) => {
+    return text.replace(/\[(.*?)\]/g, (_, p1) => `# ${p1}`);
+}
+
 const ResponseBubble: React.FC<ResponseBubbleProps> = ({ text }) => {
+    const formattedResponse = formatResponse(text);
+    
     return (
         <div className="
             max-w-[80%]
@@ -32,9 +39,43 @@ const ResponseBubble: React.FC<ResponseBubbleProps> = ({ text }) => {
                             {...props}
                         />
                     ),
+                    ul: ({ node, ...props }) => (
+                        <ul className="list-disc pl-5 mb-4" {...props} />
+                    ),
+                    li: ({ node, ...props }) => (
+                        <li style={{ marginBottom: "0.5rem" }} {...props} />
+                    ),
+                    h1: ({ node, ...props }) => (
+                        <div>
+                        {/* Line separator before heading 1 */}
+                        <hr className="border-t border-white/40 my-3" />
+                        <h1
+                            className="text-xl font-bold mb-1"
+                            style={{ color: "#CBDB2F" }}
+                            {...props}
+                        />
+                        </div>
+                    ),
+                    h3: ({ node, ...props }) => (
+                        <h3
+                            className="text-lg font-bold mb-1"
+                            style={{ color: "#FDB4C6", marginTop: "1rem" }}
+                            {...props}
+                        />
+                    ),
+                     p: ({ node, ...props }) => (
+                        <p style={{ color: "#FFFFFF", marginBottom: "1.25rem" }}>
+                            {props.children}
+                        </p>
+                    ),
+                    strong: ({ node, ...props }) => (
+                        <strong style={{ color: "#deecbe", fontWeight: 700 }}>
+                            {props.children}
+                        </strong>
+                    ),
                 }}
             >
-                {text}
+                {formattedResponse}
             </ReactMarkdown>
         </div>
     );

@@ -12,6 +12,10 @@ h1 {
   font-family: "museo", "serif";
 }
 
+h3 {
+  font-family: "museo", "serif";
+}
+
 @font-face {
   font-family: "MyFont";
   src: url("./assets/VIC-fonts/VIC-Regular.otf") format("opentype");
