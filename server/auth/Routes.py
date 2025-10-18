@@ -15,7 +15,6 @@ logger = getLogger(__name__)
 
 router = APIRouter()
 
-
 @router.post("/login", response_model=Token)
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
@@ -35,7 +34,8 @@ async def login_for_access_token(
         access_token = access_token,
         token_type = "bearer",
         username = user.username,
-        email_address = user.email_address
+        email_address = user.email_address,
+        role =  user.role
     )
 
 
@@ -55,8 +55,8 @@ async def reset_inform(
             # Don't reveal whether user exists
             logger.info(f"Reset requested for non-existent or email-less user: {username}")
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
+              status_code = status.HTTP_404_NOT_FOUND,
+              detail = "Cannot find user in the database"
             )
         # Check if there's an unexpired token
         if user.reset_token:
@@ -128,10 +128,9 @@ async def reset_inform(
         raise e
     except Exception as e:
         logger.error(f"Error processing reset request: {e}")
-        # Don't reveal error details to user
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing password reset request {e}"
+            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail = f"Internal server error : {e}"
         )
 
     return generic_response

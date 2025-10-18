@@ -35,7 +35,12 @@ function Login() {
                     sessionStorage.setItem("username", result.username);
                     sessionStorage.setItem("email", result.email_address);
                 }
-                navigate('/admin');
+                if (result.role == "admin") {
+                    navigate('/admin');
+                } else {
+                    alert("Login success");
+                    navigate('/');
+                }
             } else {
                 alert("Login failed. Please check your credentials.");
             }

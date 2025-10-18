@@ -24,7 +24,7 @@ def get_topk_similar_docs(query_embedding, k=5):
     """Retrieve top k most similar documents with cosine similarity scores"""
     if isinstance(query_embedding, np.ndarray):
         query_embedding = query_embedding.tolist()
-    SIMILARITY_THRESHOLD = 0.7
+    SIMILARITY_THRESHOLD = 0.50
     with Session(engine) as session:
         distance = EmbeddingStorage.embedding.cosine_distance(query_embedding)
         # Build query

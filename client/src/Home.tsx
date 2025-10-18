@@ -1,3 +1,4 @@
+// import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Map from "./Map";
 import ChatContainer from "./chat/ChatContainer";
@@ -7,6 +8,9 @@ import { Button } from "./components/ui/button";
 
 function Home() {
     const navigate = useNavigate();
+    // const [logIn, setLogIn] = useState(false);
+
+    // if (localStorage.getItem("access_token"))
 
     return (
         <div className="w-screen flex overflow-hidden">

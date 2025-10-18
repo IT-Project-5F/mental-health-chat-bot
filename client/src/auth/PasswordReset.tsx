@@ -9,9 +9,9 @@ function PasswordReset() {
 
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get("token") || "";
-    const username = queryParams.get("username") || "";
 
-    const [password, setPassword] = useState("");
+    const [username, setUsername] = useState("");
+    const [new_password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -20,7 +20,7 @@ function PasswordReset() {
         e.preventDefault();
         
         // Check for password before API call
-        if (password !== confirmPassword) {
+        if (new_password !== confirmPassword) {
             alert("Passwords do not match")
             return
         }
@@ -28,7 +28,7 @@ function PasswordReset() {
         setLoading(true);
 
         try {
-            const result = await request("PUT", "/api/auth/reset/confirm", { token, username, password }, true, "json");
+            const result = await request("PUT", "/api/auth/reset/confirm", { token, username, new_password }, true, "json");
             if (result && result.id) {
                 setSuccess(true)
                 setTimeout(() => navigate("/login"), 2000);
@@ -63,12 +63,23 @@ function PasswordReset() {
                 <form onSubmit={handleSubmit} className="flex flex-col h-screen items-center justify-center">
                     <h1 className="p-6 text-3xl font-bold text-[#CBDB2F]">Password Reset</h1>
                     <div className="flex flex-col items-start">
+                        <label htmlFor="username" className="m-2 text-[#CBDB2F] font-bold hidden sm:block">Username</label>
+                        <input
+                            id="username"
+                            type="text"
+                            placeholder="Your Username"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="px-6 py-3 m-1 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
+                        />
+                    </div>
+                    <div className="flex flex-col items-start">
                         <label htmlFor="password" className="m-2 text-[#CBDB2F] font-bold hidden sm:block">New Password</label>
                         <input
                             id="password"
                             type="password"
                             placeholder="New password"
-                            value={password}
+                            value={new_password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="px-6 py-3 m-1 text-[#014532] font-bold placeholder-gray-600 placeholder:font-bold bg-white rounded-4xl border-5 border-[#01563E] focus:outline-none focus:ring-1 focus:ring-white transition duration-300 ease-in-out"
                         />
