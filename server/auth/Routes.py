@@ -34,7 +34,8 @@ async def login_for_access_token(
         access_token = access_token,
         token_type = "bearer",
         username = user.username,
-        email_address = user.email_address
+        email_address = user.email_address,
+        role =  user.role
     )
 
 
