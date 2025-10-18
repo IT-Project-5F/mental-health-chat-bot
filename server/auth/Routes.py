@@ -54,13 +54,15 @@ async def reset_inform(
         if not user or not user.email_address:
             # Don't reveal whether user exists
             logger.info(f"Reset requested for non-existent or email-less user: {username}")
-            return generic_response
-
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
         # Check if there's an unexpired token
         if user.reset_token:
             try:
                 # Verify if token is still valid
-                reset_payload = jwt.decode(user.reset_token, SECRET_KEY, algorithms=[ALGORITHM])
+                jwt.decode(user.reset_token, SECRET_KEY, algorithms=[ALGORITHM])
                 # Token is still valid
                 logger.info(f"Valid reset token already exists for user: {username}")
                 raise HTTPException(
@@ -122,12 +124,15 @@ async def reset_inform(
         })
         logger.info(f"Reset email sent successfully for user: {username}")
 
-    except HTTPException:
-        raise
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error processing reset request: {e}")
         # Don't reveal error details to user
-        return generic_response
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error processing password reset request {e}"
+        )
 
     return generic_response
 

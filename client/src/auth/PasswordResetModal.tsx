@@ -12,6 +12,8 @@ function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
     const [username, setUsername] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [error, setError] = useState(false);
+    // const [errorMsg, setErrorMsg] = useState<string | null>(null);
     
     const handleClose = () => {
         const confirmClose = window.confirm("Exiting now will discard all form progress. Are you sure you want to exit?");
@@ -32,8 +34,11 @@ function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
         
         try {
             const result = await request("PUT", `/api/auth/reset/${username}`, { username }, true, "json");
-            if (result && result.message) {
+            if (result && result.success) {
                 setSuccess(true);
+            } else {
+                setError(true);
+                // setErrorMsg(result.message);
             }
         } catch (error) {
             console.error("Password reset error: ", error);
@@ -45,7 +50,7 @@ function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
     return (
         // Background of Modal Window - Not Scrollable
         <div className="fixed inset-0 bg-black/70 z-[9999] p-4 sm:p-8 flex items-center justify-center">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl h-[90vh] flex flex-col relative transform transition-all duration-300 ease-out scale-100 opacity-100">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-[95vw] sm:max-w-3xl h-[80vh] flex flex-col relative transform transition-all duration-300 ease-out scale-100 opacity-100">
                 
                 {/* Modal Window Header */}
                 <div className="flex sticky top-0 bg-gradient-to-r from-[#DCEAAB] to-[#A7C957] z-10 p-4 sm:p-6 border-b border-[#01563E] rounded-t-xl">
@@ -62,11 +67,16 @@ function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
 
                 {/* Service Creation Form Component */}
                 <form onSubmit={handlePasswordReset} className="flex flex-col h-screen items-center justify-center bg-[#01563E]">
-                    {success ? (
+                    { error ? (
+                        <p className="my-1 mr-1 text-red-300">
+                            {/* Error: {errorMsg} */}
+                            Password reset failed. Please try again.
+                        </p>
+                    ) : success ? (
                         <p className="my-1 mr-1 text-[#CBDB2F]">
                             Password reset link sent! Please check your email.
                         </p>
-                    ): (
+                    ) : (
                         <div>
                             <div className="flex flex-col items-start">
                                 <label htmlFor="username" className="m-2 text-[#CBDB2F] font-bold hidden sm:block">Username</label>
