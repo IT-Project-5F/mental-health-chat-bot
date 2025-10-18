@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from .RAG_Service import process_with_intelligent_fallback
 from .Utils import get_topk_similar_docs, get_embeddings_vector
-from guardrails import Guard
 from .Model import *
 import logging
 from tasks import cleanup_expired_sessions, SESSION_TTL_HOURS, SESSION_INACTIVITY_MINUTES, MAX_SESSIONS

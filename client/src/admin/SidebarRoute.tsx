@@ -18,7 +18,11 @@ function SidebarRoute( { selected, setSelected } : SidebarRouteProps) {
     const handleLogOut = async (e: React.FormEvent) => {
         e.preventDefault();
         localStorage.removeItem("access_token");
+        localStorage.removeItem("username");
+        localStorage.removeItem("email");
         sessionStorage.removeItem("access_token");
+        sessionStorage.removeItem("username");
+        sessionStorage.removeItem("email");
         navigate('/login')
     }
 

@@ -34,26 +34,27 @@ class PromptGenerator:
             2. Always include crisis support details: Lifeline 13 11 14.
             
             FORMATTING RULES (STRICT):
-            - Plain text only: no Markdown, bullets, special symbols, or asterisks.
-            - Professional directory-style layout.
-            - Field labels in UPPERCASE: ORGANISATION, ADDRESS, PHONE, EMAIL, WEBSITE, SERVICE TYPE, COST, HOURS.
-            - Include a short friendly introduction: "Here are some mental health services in your area that may be 
-            helpful:"
+            - Use Markdown for headings (`# Service Name`) for service names.
+            - Field labels in **bold** (Title Case: Organisation, Address, Phone, Email, Website, Service Type, Cost, Hours)
+            - CAVEAT label in **bold**, explanatory sentence in *italics*
+            - Allow Markdown spacing and line breaks between fields and services for readability.
+            - **Do NOT** format email addresses or website URLs as clickable Markdown links; leave them as plain text.
+            - Include a short friendly introduction: "Here are some mental health services in your area that may be helpful:"
             
             RESPONSE STRUCTURE:
             1. Start with the friendly introduction.
             2. List 3-5 services in this exact format:
             
-               [Service Name]
-               ORGANISATION: Full organization name
-               ADDRESS: Complete street address with suburb, state, and postcode
-               PHONE: Contact number
-               EMAIL: Email address
-               WEBSITE: Full URL
-               SERVICE TYPE: Description of services offered
-               COST: Pricing information
-               HOURS: Operating hours
-               CAVEAT: (only if service is from web or non-primary source)
+               # Service Name
+               **Organisation:** Full organization name  
+               **Address:** Complete street address with suburb, state, and postcode  
+               **Phone:** Contact number  
+               **Email:** Email address
+               **Website:** Full URL
+               **Service Type:** Description of services offered  
+               **Cost:** Pricing information  
+               **Hours:** Operating hours  
+               **CAVEAT:** *Explanatory text only if the service is from a web or non-primary source*
             
             3. Always end with:
                If you are in crisis, you can contact Lifeline on 13 11 14 for immediate support.
@@ -61,31 +62,30 @@ class PromptGenerator:
             EXAMPLE OUTPUT:
             
             Here are some mental health services in your area that may be helpful:
-            
-            [Drummond Street Services]
-            ORGANISATION: Drummond Street Services
-            ADDRESS: 100 Drummond St, Carlton VIC 3053
-            PHONE: 03 9663 6733
-            EMAIL: enquiries@ds.org.au
-            WEBSITE: https://ds.org.au/
-            SERVICE TYPE: Primary and specialised clinical ambulatory mental health care; community support services
-            COST: Free and paid options available
-            HOURS: Standard business hours
-            
-            [Headspace Carlton]
-            ORGANISATION: Headspace Carlton
-            ADDRESS: 369 Royal Parade, Parkville VIC 3052
-            PHONE: 03 9347 6000
-            EMAIL: carlton@headspace.org.au
-            WEBSITE: https://headspace.org.au/headspace-centres/carlton/
-            SERVICE TYPE: Youth mental health services for ages 12-25, counselling, employment support
-            COST: Free or low cost
-            HOURS: Monday to Friday, 9am - 5pm
-            CAVEAT: This information was retrieved from web sources to supplement our database. Please verify 
-            details directly with the service.
-            
+
+            # Drummond Street Services
+            **Organisation:** Drummond Street Services  
+            **Address:** 100 Drummond St, Carlton VIC 3053  
+            **Phone:** 03 9663 6733  
+            **Email:** enquiries@ds.org.au  
+            **Website:** https://ds.org.au/  
+            **Service type:** Primary and specialised clinical ambulatory mental health care; community support services  
+            **Cost:** Free and paid options available  
+            **Hours:** Standard business hours
+
+            # Headspace Carlton
+            **Organisation:** Headspace Carlton  
+            **Address:** 369 Royal Parade, Parkville VIC 3052  
+            **Phone:** 03 9347 6000  
+            **Email:** carlton@headspace.org.au
+            **Website:** https://headspace.org.au/headspace-centres/carlton/  
+            **Service type:** Youth mental health services for ages 12–25, counselling, employment support  
+            **Cost:** Free or low cost  
+            **Hours:** Monday to Friday, 9am – 5pm  
+            **CAVEAT:** *This information was retrieved from web sources to supplement our database. Please verify details directly with the service.*
+
             If you are in crisis, you can contact Lifeline on 13 11 14 for immediate support.
-            
+
             TONE GUIDELINES:
             - Warm and empathetic
             - Professional and trustworthy

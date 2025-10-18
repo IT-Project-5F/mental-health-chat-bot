@@ -32,7 +32,7 @@ const ChatContainer: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      text: "Hello 👋, how can I help you today?\nType your query below or select a suggested action button to get started!",
+      text: "Hello, how can I help you today?\n\nType your query below or select a suggested action button to get started!",
       sender: "chatbot",
     },
   ]);
@@ -174,7 +174,7 @@ const ChatContainer: React.FC = () => {
       else {
         const maxWidth =
           window.innerWidth >= 1920
-            ? window.innerWidth * 0.33
+            ? window.innerWidth * 0.45
             : window.innerWidth * 0.5;
         const minWidth = 300;
         const newWidth = Math.min(
@@ -329,7 +329,7 @@ const ChatContainer: React.FC = () => {
         </svg>
       ),
       onAction: () => setActiveModal("addService"),
-      requiresUserToken: false, // FOR TESTING, CHANGE TO TRUE
+      requiresUserToken: true,
     },
   ];
 
@@ -455,7 +455,7 @@ const ChatContainer: React.FC = () => {
         </button>
 
         {/* Header */}
-        <div className="flex px-3 py-5 h-auto sm:h-14 bg-gradient-to-r from-[#FDB4C6] to-[#62BB46] bg-[#013F2D]"></div>
+        <div className="flex px-3 py-5 h-auto sm:h-13 bg-gradient-to-r from-[#FDB4C6] to-[#62BB46] bg-[#013F2D]"></div>
 
         {/* Messages */}
         <div

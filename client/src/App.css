@@ -40,3 +40,23 @@
 .read-the-docs {
   color: #888;
 }
+
+.markdown-link {
+  color: #9ccdff;
+  text-decoration: underline;
+}
+
+.markdown-link:visited {
+  color: #e0b2ff;
+}
+
+.markdown-link:active {
+  color: #ffa0a0; 
+}
+
+.markdown-link:hover {
+  color: #a2ff83;
+}
+
+
+
