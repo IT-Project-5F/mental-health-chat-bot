@@ -50,6 +50,8 @@ function Login() {
             console.error("Login error: ", error);
             alert("An error occurred during login. Please try again.");
             navigate('/login');
+        } finally {
+            setLoading(false);
         }
     };
 
