@@ -3,7 +3,8 @@ import ServiceCreationForm from "@/formComponents/ServiceCreationForm";
 
 /* Types and Interfaces */
 interface ModalProps {
-    onClose: () => void
+    onClose: () => void;
+    onSuccess?: () => void;
 }
 
 /**
@@ -11,7 +12,7 @@ interface ModalProps {
  * - 'Add a New Service' Suggested Action button is only shown for verified (logged in) healthcare professional users
  * - Modal Window is rendered in the centre of screen when triggged by user clicking 'Suggested Action Button'
  */
-const AddServiceFormModal: React.FC<ModalProps> = ({ onClose }) => {
+const AddServiceFormModal: React.FC<ModalProps> = ({ onClose, onSuccess }) => {
     /* States */
     const [showDescription, setShowDescription] = useState(false);
     
@@ -63,7 +64,7 @@ const AddServiceFormModal: React.FC<ModalProps> = ({ onClose }) => {
 
                 {/* Service Creation Form Component */}
                 <div className="max-w-full overflow-x-hidden">
-                    <ServiceCreationForm />
+                    <ServiceCreationForm onSuccess={onSuccess} />
                 </div>
             </div>
         </div>
