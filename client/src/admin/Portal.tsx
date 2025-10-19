@@ -20,6 +20,14 @@ function Portal() {
         setselectedService(result);
     }
 
+    // Exit without change to services
+    const handleClose = () => {
+        const confirmClose = window.confirm("Exiting now will discard all form progress. Are you sure you want to exit?");
+        if (confirmClose) {
+            setselectedService(null);
+        }
+    };
+
     const pages = [
         <Dashboard onNavigate={setSelected} username={username}/>,
         <Services onEditService={handleEditService}/>,
@@ -31,7 +39,7 @@ function Portal() {
             <Sidebar selected={selected} setSelected={setSelected} username={username} email={email}/>
             <div className="flex-1 p-6">
                 {selectedService
-                    ? <ServicePage service={selectedService} onClose={() => setselectedService(null)}/>
+                    ? <ServicePage service={selectedService} onClose={handleClose}/>
                     : pages[selected]
                 }
             </div>
