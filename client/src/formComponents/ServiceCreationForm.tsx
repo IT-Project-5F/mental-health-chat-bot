@@ -2,6 +2,11 @@ import { request } from '../api.ts'
 import ServiceForm from './service-form.tsx';
 import type { ServiceFormData } from './service-form.tsx';
 
+interface ServiceCreationFormProps {
+    onSuccess?: () => void;
+}
+
+
 /* Form is only accessible to verified emails belonging to Healthcare Professionals.
    When requested, form will pop up for healthcare professionals to fill out to create a new service in the database. 
     Fields:
@@ -12,7 +17,7 @@ import type { ServiceFormData } from './service-form.tsx';
      * address,suburb,state,postcode,
      * cost,delivery_method,level_of_care,referral_pathway,service_type,target_population,workforce_type
     */
-const ServiceCreationForm: React.FC = () => {
+const ServiceCreationForm: React.FC<ServiceCreationFormProps> = ({ onSuccess }) => {
 
     const handleSubmit = async (formData: ServiceFormData) => {
 
@@ -56,8 +61,10 @@ const ServiceCreationForm: React.FC = () => {
         try {
             const response = await request('POST', '/api/database/', submissionData);
             console.log('Saved new service:', response);
-
-        } catch (e) {
+            if (onSuccess) {
+                onSuccess();
+            }
+        } catch (e) { 
             console.error('Error saving service:', e);
         }
     };

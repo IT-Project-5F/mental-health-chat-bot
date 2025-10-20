@@ -11,20 +11,24 @@ function Portal() {
     const [selected, setSelected] = useState(0);
     const [selectedService, setselectedService] = useState<ServiceFormData | null>(null);
 
+    // Retrieve username and email to parse to admin portal (dashboard and sidebar)
+    const username = localStorage.getItem("username") || sessionStorage.getItem("username") || "Unknown User";
+    const email = localStorage.getItem("email") || sessionStorage.getItem("email") || "No Email";
+
     const handleEditService = async (service: ServiceFormData) => {
         const result = await request("GET", `/api/database/${service.service_campus_key}`);
         setselectedService(result);
     }
 
     const pages = [
-        <Dashboard onNavigate={setSelected}/>,
+        <Dashboard onNavigate={setSelected} username={username}/>,
         <Services onEditService={handleEditService}/>,
         <Users />
     ];
 
     return (
         <div className="grid absolute w-screen h-screen inset-0 grid-cols-[60px_1fr] sm:grid-cols-[360px_1fr]">
-            <Sidebar selected={selected} setSelected={setSelected}/>
+            <Sidebar selected={selected} setSelected={setSelected} username={username} email={email}/>
             <div className="flex-1 p-6">
                 {selectedService
                     ? <ServicePage service={selectedService} onClose={() => setselectedService(null)}/>
