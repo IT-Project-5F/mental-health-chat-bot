@@ -37,6 +37,13 @@ export function getToken(): string | null {
 }
 
 /**
+ * Get the current user's email from storage
+ */
+export function getUserEmail(): string | null {
+    return localStorage.getItem("user_email") || sessionStorage.getItem("user_email");
+}
+
+/**
  * Get the current user's role from the stored token
  */
 export function getUserRole(): string | null {
@@ -74,5 +81,7 @@ export function isTokenExpired(): boolean {
  */
 export function logout(): void {
     localStorage.removeItem("access_token");
+    localStorage.removeItem("user_email");
     sessionStorage.removeItem("access_token");
+    sessionStorage.removeItem("user_email");
 }

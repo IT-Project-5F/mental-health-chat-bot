@@ -27,9 +27,15 @@ function Login() {
                 if (remember) {
                     // Persist login
                     localStorage.setItem("access_token", result.access_token);
+                    if (result.email_address) {
+                        localStorage.setItem("user_email", result.email_address);
+                    }
                 } else {
                     // Clears (signs out) when browser closes
                     sessionStorage.setItem("access_token", result.access_token);
+                    if (result.email_address) {
+                        sessionStorage.setItem("user_email", result.email_address);
+                    }
                 }
                 navigate('/admin');
             } else {
