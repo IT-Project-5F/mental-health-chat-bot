@@ -54,7 +54,7 @@ const ServiceCreationForm: React.FC = () => {
 
         /* Request to create a new database record with the update database API endpoint */
         try {
-            const response = await request('POST', '/api/database', submissionData);
+            const response = await request('POST', '/api/database/', submissionData);
             console.log('Saved new service:', response);
 
         } catch (e) {
