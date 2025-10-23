@@ -28,11 +28,13 @@ function Home() {
                 localStorage.removeItem("access_token");
                 localStorage.removeItem("email_address");
                 localStorage.removeItem("username");
+                localStorage.removeItem("role");
             }
             if (sessionStorage.getItem("access_token")) {
                 sessionStorage.removeItem("access_token");
                 sessionStorage.removeItem("email_address");
                 sessionStorage.removeItem("username");
+                sessionStorage.removeItem("role");
             }
 
             setLoading(false);

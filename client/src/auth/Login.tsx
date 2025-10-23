@@ -32,11 +32,13 @@ function Login() {
                     localStorage.setItem("access_token", result.access_token);
                     localStorage.setItem("username", result.username);
                     localStorage.setItem("email", result.email_address);
+                    localStorage.setItem("role", result.role);
                 } else {
                     // Clears (signs out) when browser closes
                     sessionStorage.setItem("access_token", result.access_token);
                     sessionStorage.setItem("username", result.username);
                     sessionStorage.setItem("email", result.email_address);
+                    sessionStorage.setItem("role", result.role);
                 }
                 if (result.role == "admin") {
                     setTimeout(() => navigate("/admin"), 2000);

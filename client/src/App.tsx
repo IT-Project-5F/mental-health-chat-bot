@@ -18,21 +18,21 @@ function App() {
           <Route
             path="/login"
             element={
-              <Login/>
+              <Login />
             }
           />
           <Route
             path="/register"
             element={
-              <Register/>
+              <Register />
             }
           />
           <Route
             path="/admin/*"
             element={
-                <ProtectedRoute>
-                    <Portal />
-                </ProtectedRoute>
+              <ProtectedRoute requiredRole="admin">
+                <Portal />
+              </ProtectedRoute>
             }
           />
           <Route

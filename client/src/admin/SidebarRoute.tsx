@@ -20,9 +20,11 @@ function SidebarRoute( { selected, setSelected } : SidebarRouteProps) {
         localStorage.removeItem("access_token");
         localStorage.removeItem("username");
         localStorage.removeItem("email");
+        localStorage.removeItem("role");
         sessionStorage.removeItem("access_token");
         sessionStorage.removeItem("username");
         sessionStorage.removeItem("email");
+        sessionStorage.removeItem("role");
         navigate('/login')
     }
 
