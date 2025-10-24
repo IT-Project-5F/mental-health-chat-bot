@@ -82,10 +82,6 @@ export function isTokenExpired(): boolean {
 export function logout(): void {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user_email");
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
     sessionStorage.removeItem("access_token");
     sessionStorage.removeItem("user_email");
-    sessionStorage.removeItem("role");
-    sessionStorage.removeItem("username");
 }
