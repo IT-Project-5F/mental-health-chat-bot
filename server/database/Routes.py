@@ -2,16 +2,20 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
+import logging
 
 from database_config import get_db
 from models import (
     Organisation, Service, Campus, ServiceCampus, Region,
     Cost, DeliveryMethod, LevelOfCare, ReferralPathway,
-    ServiceType, TargetPopulation, WorkforceType
+    ServiceType, TargetPopulation, WorkforceType,
+    RawRecordStorage, EmbeddingStorage
 )
 from .Schemas import ServiceCreate, ServiceUpdate, ServiceResponse
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 def build_service_response(service_campus, db: Session) -> ServiceResponse:
@@ -73,6 +77,133 @@ def build_service_response(service_campus, db: Session) -> ServiceResponse:
         target_population=target.target_population if target else None,
         workforce_type=workforce.workforce_type if workforce else None
     )
+
+
+def create_embedding_for_service(
+    service_campus_key: UUID,
+    db: Session,
+    csv_record_index: int = None
+) -> bool:
+    """
+    Create embedding entries for a newly created service.
+    This allows the service to be searchable via the chat RAG system.
+    """
+    try:
+        # Import here to avoid circular dependencies
+        from chat.Utils import get_embeddings_vector
+
+        # Get the service campus and related data
+        service_campus = db.query(ServiceCampus).filter(
+            ServiceCampus.service_campus_key == service_campus_key
+        ).first()
+
+        if not service_campus:
+            logger.error(f"Service campus not found: {service_campus_key}")
+            return False
+
+        # Get related entities
+        service = db.query(Service).filter(Service.service_key == service_campus.service_key).first()
+        campus = db.query(Campus).filter(Campus.campus_key == service_campus.campus_key).first()
+        organisation = None
+        if service:
+            organisation = db.query(Organisation).filter(
+                Organisation.organisation_key == service.organisation_key
+            ).first()
+
+        # Get optional related data
+        region = None
+        cost = db.query(Cost).filter(Cost.service_campus_key == service_campus_key).first()
+        delivery = db.query(DeliveryMethod).filter(DeliveryMethod.service_campus_key == service_campus_key).first()
+        level_care = db.query(LevelOfCare).filter(LevelOfCare.service_campus_key == service_campus_key).first()
+        referral = db.query(ReferralPathway).filter(ReferralPathway.service_campus_key == service_campus_key).first()
+        svc_type = db.query(ServiceType).filter(ServiceType.service_campus_key == service_campus_key).first()
+        target = db.query(TargetPopulation).filter(TargetPopulation.service_campus_key == service_campus_key).first()
+        workforce = db.query(WorkforceType).filter(WorkforceType.service_campus_key == service_campus_key).first()
+
+        # Create RawRecordStorage entry
+        # Generate a unique csv_record_index if not provided
+        if csv_record_index is None:
+            max_index = db.query(RawRecordStorage.csv_record_index).order_by(
+                RawRecordStorage.csv_record_index.desc()
+            ).first()
+            csv_record_index = (max_index[0] + 1) if max_index and max_index[0] else 1000
+
+        raw_record = RawRecordStorage(
+            csv_record_index=csv_record_index,
+            organisation_key=organisation.organisation_key if organisation else service.organisation_key,
+            campus_service_key=service_campus_key,
+            region_key=region.region_key if region else None,
+            cost_key=cost.cost_key if cost else None,
+            delivery_method_key=delivery.delivery_method_key if delivery else None,
+            level_of_care_key=level_care.level_of_care_key if level_care else None,
+            referral_pathway_key=referral.referral_pathway_key if referral else None,
+            service_type_key=svc_type.service_type_key if svc_type else None,
+            target_population_key=target.target_population_key if target else None,
+            workforce_type_key=workforce.workforce_type_key if workforce else None
+        )
+        db.add(raw_record)
+        db.flush()
+
+        # Create text representation for embedding
+        text_parts = []
+        if organisation:
+            text_parts.append(f"Organisation: {organisation.organisation_name}")
+        if service:
+            text_parts.append(f"Service: {service.service_name}")
+        if campus:
+            text_parts.append(f"Campus: {campus.campus_name}")
+        if service_campus.notes:
+            text_parts.append(f"Notes: {service_campus.notes}")
+        if cost:
+            text_parts.append(f"Cost: {cost.cost}")
+        if svc_type:
+            text_parts.append(f"Service Type: {svc_type.service_type}")
+        if target:
+            text_parts.append(f"Target Population: {target.target_population}")
+        if delivery:
+            text_parts.append(f"Delivery Method: {delivery.delivery_method}")
+        if level_care:
+            text_parts.append(f"Level of Care: {level_care.level_of_care}")
+        if referral:
+            text_parts.append(f"Referral Pathway: {referral.referral_pathway}")
+        if workforce:
+            text_parts.append(f"Workforce Type: {workforce.workforce_type}")
+        if service_campus.address:
+            address_parts = [service_campus.address]
+            if service_campus.suburb:
+                address_parts.append(service_campus.suburb)
+            if service_campus.state:
+                address_parts.append(service_campus.state)
+            text_parts.append(f"Address: {', '.join(address_parts)}")
+
+        service_text = ". ".join(text_parts)
+
+        # Generate embedding
+        embedding_vector = get_embeddings_vector(service_text)
+        if not embedding_vector:
+            logger.error(f"Failed to generate embedding for service: {service_campus_key}")
+            db.rollback()
+            return False
+
+        # Calculate token count (approximate)
+        token_count = len(service_text.split()) * 4 // 3
+
+        # Create EmbeddingStorage entry
+        embedding_record = EmbeddingStorage(
+            record_key=raw_record.raw_record_storage_key,
+            token=token_count,
+            embedding=embedding_vector
+        )
+        db.add(embedding_record)
+        db.commit()
+
+        logger.info(f"Successfully created embedding for service: {service_campus_key}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Error creating embedding for service {service_campus_key}: {e}")
+        db.rollback()
+        return False
 
 
 @router.get("/search", response_model=List[ServiceResponse])
@@ -251,6 +382,12 @@ def create_service_record(service_data: ServiceCreate, db: Session = Depends(get
 
         db.commit()
 
+        # Create embedding for the new service to make it searchable in chat
+        embedding_success = create_embedding_for_service(service_campus.service_campus_key, db)
+        if not embedding_success:
+            logger.warning(f"Service created but embedding generation failed for: {service_campus.service_campus_key}")
+            # Don't fail the request - service is still created successfully
+
         # Return the created service with all fields including the new service_campus_key
         return build_service_response(service_campus, db)
 
@@ -412,6 +549,28 @@ def update_service_record(
 
         db.commit()
 
+        # Update embedding to reflect the changes
+        # First, delete old embedding entries if they exist
+        raw_record = db.query(RawRecordStorage).filter(
+            RawRecordStorage.campus_service_key == service_campus_key
+        ).first()
+
+        if raw_record:
+            # Delete old embedding
+            db.query(EmbeddingStorage).filter(
+                EmbeddingStorage.record_key == raw_record.raw_record_storage_key
+            ).delete()
+            # Delete old raw record
+            db.query(RawRecordStorage).filter(
+                RawRecordStorage.raw_record_storage_key == raw_record.raw_record_storage_key
+            ).delete()
+            db.commit()
+
+        # Create new embedding with updated data
+        embedding_success = create_embedding_for_service(service_campus_key, db)
+        if not embedding_success:
+            logger.warning(f"Service updated but embedding regeneration failed for: {service_campus_key}")
+
         return build_service_response(service_campus, db)
 
     except Exception as e:
@@ -430,7 +589,22 @@ def delete_service_record(service_campus_key: UUID, db: Session = Depends(get_db
         raise HTTPException(status_code=404, detail="Service not found")
 
     try:
-        # Delete related records first
+        # Delete embedding records first
+        raw_record = db.query(RawRecordStorage).filter(
+            RawRecordStorage.campus_service_key == service_campus_key
+        ).first()
+
+        if raw_record:
+            # Delete embedding entries
+            db.query(EmbeddingStorage).filter(
+                EmbeddingStorage.record_key == raw_record.raw_record_storage_key
+            ).delete()
+            # Delete raw record
+            db.query(RawRecordStorage).filter(
+                RawRecordStorage.raw_record_storage_key == raw_record.raw_record_storage_key
+            ).delete()
+
+        # Delete related records
         db.query(Cost).filter(Cost.service_campus_key == service_campus_key).delete()
         db.query(DeliveryMethod).filter(DeliveryMethod.service_campus_key == service_campus_key).delete()
         db.query(LevelOfCare).filter(LevelOfCare.service_campus_key == service_campus_key).delete()
