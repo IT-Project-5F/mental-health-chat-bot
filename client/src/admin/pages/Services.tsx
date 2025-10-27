@@ -21,9 +21,10 @@ import type { ServiceFormData } from "@/formComponents/service-form"
 type ServiceProps = {
     pageSize?: number
     onEditService: (service: ServiceFormData) => void
+    onCreateService: () => void;
 }
 
-function Services({ pageSize = 10, onEditService }: ServiceProps) {
+function Services({ pageSize = 10, onEditService, onCreateService }: ServiceProps) {
     const [data, setData] = useState<ServiceFormData[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -196,6 +197,16 @@ function Services({ pageSize = 10, onEditService }: ServiceProps) {
 
             {loading && <div>Loading...</div>}
             {error && <div className="text-red-500">Error: {error}</div>}
+
+            {/* Add New Service Button */}
+            <div className="mb-4">
+                <Button
+                    variant={"tertiary"}
+                    onClick={onCreateService}
+                >
+                    New Service
+                </Button>
+            </div>
 
             {/* Results */}
             {!loading && !error && data.length > 0 && (

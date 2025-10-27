@@ -108,7 +108,6 @@ function ServicePage( { service, onClose }: ServicePageProps ) {
                 onSubmit={handleSubmit}
             />
             {/* Close Button. Does not save changes. */}
-            {/* TODO: Additional action (e.g. Changes are not saved. Are you sure?) */}
             <Button
                 onClick={onClose}
                 disabled={loading}
