@@ -61,7 +61,7 @@ const ChatContainer: React.FC = () => {
   // Check if user has access-token (for conditional rendering of certain suggested action buttons)
   const [hasAccessToken, setHasAccessToken] = useState(false);
   useEffect(() => {
-    const userToken = localStorage.getItem("access_token");
+    const userToken = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
     setHasAccessToken(Boolean(userToken));
   }, []);
 

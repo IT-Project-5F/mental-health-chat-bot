@@ -25,7 +25,7 @@ function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps)
     // Check admin role if required
     if (requireAdmin) {
         const role = getUserRole();
-        if (role !== 'admin') {
+        if (role !== "admin") {
             // Redirect non-admin users to home page
             return <Navigate to="/" replace />
         }

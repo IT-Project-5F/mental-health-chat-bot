@@ -18,13 +18,13 @@ function App() {
           <Route
             path="/login"
             element={
-              <Login/>
+              <Login />
             }
           />
           <Route
             path="/register"
             element={
-              <Register/>
+              <Register />
             }
           />
           <Route

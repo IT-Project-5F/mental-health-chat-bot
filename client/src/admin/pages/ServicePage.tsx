@@ -90,6 +90,8 @@ function ServicePage( { service, onClose }: ServicePageProps ) {
             
             const response = await request("PUT", `/api/database/${service.service_campus_key}`, submissionData);
             console.log('Service updated: ', response);
+            alert("Service updated successful.")
+            if (onClose) onClose();
         } catch (error) {
             console.error("Error saving service: ", error);
             alert("An error occurred while editing the service. Please try again.");
@@ -106,7 +108,6 @@ function ServicePage( { service, onClose }: ServicePageProps ) {
                 onSubmit={handleSubmit}
             />
             {/* Close Button. Does not save changes. */}
-            {/* TODO: Additional action (e.g. Changes are not saved. Are you sure?) */}
             <Button
                 onClick={onClose}
                 disabled={loading}
