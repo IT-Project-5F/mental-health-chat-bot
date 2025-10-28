@@ -29,14 +29,29 @@ type ModalType = "addService" | "updateLocation" | null;
 const ChatContainer: React.FC = () => {
   const { updateMarkers } = useMap();
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: "Hello, how can I help you today?\n\nType your query below or select a suggested action button to get started!",
-      sender: "chatbot",
-    },
-  ]);
-  const [sessionID, setSessionID] = useState<string | null>(null);
+  // Load messages from localStorage on initial render
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem("chatMessages");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved messages:", e);
+      }
+    }
+    return [
+      {
+        id: 1,
+        text: "Hello, how can I help you today?\n\nType your query below or select a suggested action button to get started!",
+        sender: "chatbot",
+      },
+    ];
+  });
+
+  // Load sessionID from localStorage on initial render
+  const [sessionID, setSessionID] = useState<string | null>(() => {
+    return localStorage.getItem("chatSessionID");
+  });
 
   /* State */
   const [isOpen, setIsOpen] = useState(true);
@@ -64,6 +79,18 @@ const ChatContainer: React.FC = () => {
     const userToken = localStorage.getItem("access_token") || sessionStorage.getItem("access_token");
     setHasAccessToken(Boolean(userToken));
   }, []);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("chatMessages", JSON.stringify(messages));
+  }, [messages]);
+
+  // Save sessionID to localStorage whenever it changes
+  useEffect(() => {
+    if (sessionID) {
+      localStorage.setItem("chatSessionID", sessionID);
+    }
+  }, [sessionID]);
 
   /* Derived values for UI conditional rendering */
   const lastMessageFromChatbot =
