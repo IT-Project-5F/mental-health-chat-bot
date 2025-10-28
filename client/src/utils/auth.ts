@@ -77,11 +77,14 @@ export function isTokenExpired(): boolean {
 }
 
 /**
- * Clear authentication data
+ * Clear authentication data and chat history
  */
 export function logout(): void {
     localStorage.removeItem("access_token");
     localStorage.removeItem("user_email");
     sessionStorage.removeItem("access_token");
     sessionStorage.removeItem("user_email");
+    // Clear chat history on logout
+    localStorage.removeItem("chatMessages");
+    localStorage.removeItem("chatSessionID");
 }
