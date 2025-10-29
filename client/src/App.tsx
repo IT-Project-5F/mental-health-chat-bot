@@ -48,13 +48,10 @@ function App() {
             }
           />
 
-          {/* TEMP: password reset UI */}
           <Route
             path="/reset"
             element={
-              <ProtectedRoute>
-                <PasswordReset />
-              </ProtectedRoute>
+              <PasswordReset />
             }
           />
         </Routes>
