@@ -101,7 +101,7 @@ async def reset_inform(
         db.refresh(user)
         # Email content
         subject = "Reset password instructions"
-        reset_url = f"http://localhost:5174/reset?token={reset_token}"
+        reset_url = f"https://mch-staging.mooo.com/reset?token={reset_token}"
         html = f"""
         <h2>Password Reset Request</h2>
         <p>Hello {user.username},</p>
