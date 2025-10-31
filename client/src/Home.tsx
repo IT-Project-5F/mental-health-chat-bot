@@ -19,9 +19,6 @@ function Home() {
       <div className="absolute inset-0 z-0">
         <Map />
       </div>
-      {/* <div className="absolute inset-0 top-0 left-0 sm:top-10 sm:left-10">
-                <Listing/>
-            </div> */}
       <div>
         <ChatContainer />
       </div>

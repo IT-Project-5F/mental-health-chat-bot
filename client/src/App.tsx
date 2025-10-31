@@ -48,7 +48,6 @@ function App() {
             }
           />
 
-          {/* TEMP: password reset UI */}
           <Route
             path="/reset"
             element={

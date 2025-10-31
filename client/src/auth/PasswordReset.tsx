@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { request } from "@/api";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,10 @@ function PasswordReset() {
 
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get("token") || "";
+
+    if (!token) {
+        return <Navigate to="/login" replace />
+    }
 
     const [username, setUsername] = useState("");
     const [new_password, setPassword] = useState("");
