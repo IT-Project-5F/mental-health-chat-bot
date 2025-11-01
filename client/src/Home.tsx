@@ -1,7 +1,6 @@
 import Map from "./Map";
 import ChatContainer from "./chat/ChatContainer";
 import QuickClose from "./QuickClose";
-// import Listing from "./dropdown/Listing.tsx";
 import { NavUser } from "./components/nav-user";
 
 function Home() {
