@@ -37,6 +37,22 @@ async def create_session():
     logger.info(f"Created new session: {session_id}")
     return SessionResponse(session_id=session_id, created_at=timestamp)
 
+@router.get("/sessions/{session_id}/validate")
+async def validate_session(session_id: str):
+    """
+    Validate if a session exists and is still active
+    Returns 200 if session exists, 404 if not found
+    """
+    if session_id not in chat_sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "valid": True,
+        "session_id": session_id,
+        "created_at": chat_sessions[session_id]["created_at"],
+        "last_activity": chat_sessions[session_id]["last_activity"]
+    }
+
 @router.get("/sessions/{session_id}/history", response_model=ChatHistory)
 async def get_chat_history(session_id: str):
     """
@@ -44,7 +60,7 @@ async def get_chat_history(session_id: str):
     """
     if session_id not in chat_sessions:
         raise HTTPException(status_code=404, detail="Session not found")
-    
+
     return ChatHistory(
         session_id=session_id,
         messages=chat_sessions[session_id]["messages"]
