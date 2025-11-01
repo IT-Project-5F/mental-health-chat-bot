@@ -80,6 +80,41 @@ const ChatContainer: React.FC = () => {
     setHasAccessToken(Boolean(userToken));
   }, []);
 
+  // Validate session on component mount - clear local storage if session expired
+  useEffect(() => {
+    const validateSession = async () => {
+      const storedSessionID = localStorage.getItem("chatSessionID");
+
+      if (!storedSessionID) {
+        return; // No session to validate
+      }
+
+      try {
+        // Check if session still exists on server
+        await request("GET", `/api/chat/sessions/${storedSessionID}/validate`);
+        console.log("Session is valid:", storedSessionID);
+      } catch (error) {
+        // Session not found or expired on server - clear local storage
+        console.log("Session expired or not found, clearing local storage");
+        localStorage.removeItem("chatSessionID");
+        localStorage.removeItem("chatMessages");
+
+        // Reset to default state
+        setSessionID(null);
+        setMessages([
+          {
+            id: 1,
+            text: "Hello, how can I help you today?\n\nType your query below or select a suggested action button to get started!",
+            sender: "chatbot",
+          },
+        ]);
+        setFirstChatbotMessage(true);
+      }
+    };
+
+    validateSession();
+  }, []); // Run only once on mount
+
   // Save messages to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("chatMessages", JSON.stringify(messages));
