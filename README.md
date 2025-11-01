@@ -103,15 +103,7 @@ SELECT COUNT(*) FROM MentalHealthEmbeddings;
 
 ## 🛠️ Development
 
-### Manual Development (Without Docker)
-
-#### Backend Setup
-
-```bash
-cd server
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 5001 --reload
-```
+For production deployment instructions, including setting up SSL certificates, domain configuration, and automated deployments via GitHub Actions, see the [DEPLOYMENT.md](DEPLOYMENT.md) guide.
 
 #### Frontend Setup
 
