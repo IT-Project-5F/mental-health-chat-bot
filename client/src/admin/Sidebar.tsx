@@ -8,6 +8,11 @@ type SidebarProps = {
     setSelected: (index: number) => void;
 }
 
+/**
+ * Description:
+ * - Admin portal sidebar
+ * - Layout of account and routes
+ */
 function Sidebar({selected, setSelected}: SidebarProps) {
     const [username, setUsername] = useState("User");
     const [role, setRole] = useState("user");

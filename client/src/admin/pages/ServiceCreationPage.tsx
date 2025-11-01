@@ -6,6 +6,10 @@ interface ServiceCreationPageProps {
     onClose?: () => void;
 }
 
+/**
+ * Description:
+ * - Empty service page for service creation
+ */
 function ServiceCreationPage( { onClose }: ServiceCreationPageProps) {
     return (
         <div className="relative top-0 inset-0">

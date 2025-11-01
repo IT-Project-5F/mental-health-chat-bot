@@ -8,6 +8,11 @@ import ServiceCreationPage from "./pages/ServiceCreationPage";
 import type { ServiceFormData } from "@/formComponents/service-form";
 import { request } from "@/api";
 
+/**
+ * Description:
+ * - Admin portal
+ * - Layout of sidebar and content
+ */
 function Portal() {
     const [selected, setSelected] = useState(0);
     const [selectedService, setselectedService] = useState<ServiceFormData | null>(null);

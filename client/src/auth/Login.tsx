@@ -6,7 +6,7 @@ import PasswordResetModal from './PasswordResetModal';
 
 /**
  * Description:
- * - Login page collects username and password to determine
+ * - Login page collects username and password
  */
 function Login() {
     const navigate = useNavigate();
@@ -16,6 +16,7 @@ function Login() {
     const [remember, setRemember] = useState(false);
     const [resetModal, setResetModal] = useState(false);
 
+    // Handle login by saving the access token from backend in cache
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -48,6 +49,7 @@ function Login() {
         }
     };
 
+    // Call password reset pop up
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
         

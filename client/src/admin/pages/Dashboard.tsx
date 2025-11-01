@@ -6,6 +6,11 @@ type DashboardProps = {
     onNavigate: (page: number) => void;
 }
 
+/**
+ * Description:
+ * - Welcome page of admin page
+ * - Allow redirection (rerender) to other admin pages
+ */
 function Dashboard( { onNavigate }: DashboardProps ) {
     const [username, setUsername] = useState("User");
 
