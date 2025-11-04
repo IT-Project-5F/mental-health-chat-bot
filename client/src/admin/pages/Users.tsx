@@ -27,6 +27,13 @@ export type User = {
     location?: string
 }
 
+/**
+ * Functionalities:
+ * - Paginated user table
+ * - Seperate users in the database from auxiliary table users
+ * - Accept or decline registration in auxiliary table
+ * - Delete user from database
+ */
 function Users({ pageSize = 20 }: UserProps) {
 
     const [users, setUsers] = useState<User[]>([])

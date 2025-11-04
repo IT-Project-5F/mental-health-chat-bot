@@ -7,6 +7,12 @@ type PasswordResetModalProps = {
     onClose: () => void;
 }
 
+/**
+ * Description:
+ * - Password reset request pop up
+ * - Request sent given username
+ * - Restricted page (only through link with valid token)
+ */
 function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
     
     const [username, setUsername] = useState("");
@@ -21,6 +27,7 @@ function PasswordResetModal ({ onClose } : PasswordResetModalProps) {
         }
     };
     
+    // Request a password reset to trigger email
     const handlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault();
 

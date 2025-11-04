@@ -10,6 +10,12 @@ interface ServicePageProps {
     onClose?: () => void;
 }
 
+
+/**
+ * Description:
+ * - Individual selected service from the service table (prefilled)
+ * - Allow editing directly to the form
+ */
 function ServicePage( { service, onClose }: ServicePageProps ) {
     const [loading, setLoading] = useState(false);
 

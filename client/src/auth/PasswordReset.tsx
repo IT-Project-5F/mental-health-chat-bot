@@ -3,13 +3,20 @@ import { Link, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { request } from "@/api";
 import { Button } from "@/components/ui/button";
 
+/**
+ * Description:
+ * - Password reset page collects username and new password
+ * - Must input new password twice to confirm
+ */
 function PasswordReset() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Extract password reset token from URL
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get("token") || "";
 
+    // Redirect if user attempts to enter the page without a password reset email with token
     if (!token) {
         return <Navigate to="/login" replace />
     }
@@ -20,6 +27,7 @@ function PasswordReset() {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
+    // Call backend to update password of a given username, require token
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         

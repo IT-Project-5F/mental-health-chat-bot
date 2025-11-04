@@ -18,6 +18,12 @@ import {
 } from "lucide-react";
 import type { ServiceFormData } from "@/formComponents/service-form"
 
+/**
+ * Functionalities:
+ * - Paginated service table
+ * - Generate table based on search
+ * - Create or Edit services in database
+ */
 type ServiceProps = {
     pageSize?: number
     onEditService: (service: ServiceFormData) => void

@@ -7,6 +7,10 @@ type SidebarRouteProps = {
     setSelected: (index: number) => void;
 }
 
+/**
+ * Description:
+ * - List of admin portal pages
+ */
 function SidebarRoute( { selected, setSelected } : SidebarRouteProps) {
     const navigate = useNavigate();
     const menuItems = [

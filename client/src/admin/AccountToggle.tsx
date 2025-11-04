@@ -9,6 +9,10 @@ type AccountProps = {
   email: string;
 };
 
+/**
+ * Description:
+ * - Layout of individual accounts
+ */
 function AccountToggle({ username, role, email }: AccountProps) {
   const navigate = useNavigate();
 

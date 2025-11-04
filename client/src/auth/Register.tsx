@@ -3,6 +3,10 @@ import { useState } from 'react';
 import { request } from '@/api';
 import { Button } from '@/components/ui/button';
 
+/**
+ * Description:
+ * - Registration page for new users
+ */
 function Register() {
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
@@ -10,6 +14,7 @@ function Register() {
     const [email_address, setEmailAddress] = useState("");
     const [location, setLocation] = useState("");
 
+    // Call backend to register account with user details
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         
